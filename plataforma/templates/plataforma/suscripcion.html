@@ -1,0 +1,33 @@
+{% extends 'plataforma/base.html' %}
+{% block content %}
+
+<div class="subscription-card">
+    <h2>Pasarela de Pagos Interna</h2>
+    <div class="info-box-premium">
+        <p>Estás gestionando el ciclo de vida transaccional para la suscripción de la cuenta <strong>Suscripción ID: 1</strong>. La operación invocará de manera atómica las reglas de negocio en el servidor SQL Server.</p>
+    </div>
+    <form method="POST" action="{% url 'suscripcion' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Método de Pago Corporativo</label>
+            <div class="select-custom">
+                <select name="metodo_pago">
+                    <option value="Tarjeta Credito">Tarjeta de Crédito Corporativa</option>
+                    <option value="PayPal">PayPal Business</option>
+                    <option value="Transferencia">Transferencia Bancaria Directa</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Simular Estado de la Transacción</label>
+            <div class="select-custom">
+                <select name="estado_transaccion">
+                    <option value="Completado">Transacción Exitosa (Aprobar Renovación)</option>
+                    <option value="Fallido">Transacción Declinada (Forzar Vencimiento)</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-full-width">Procesar Transacción en Base de Datos</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoundWave</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'plataforma/css/estilos_globales.css' %}?v=1.2">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="{% static 'plataforma/img/logo.png' %}" alt="SoundWave" class="sidebar-logo-img">
+    <span>Plataforma Musical</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Inicio</a>
+    <a href="{% url 'catalogo' %}" class="nav-item {% if request.resolver_match.url_name == 'catalogo' %}active{% endif %}">Catálogo</a>
+    <a href="{% url 'historial' %}" class="nav-item {% if request.resolver_match.url_name == 'historial' %}active{% endif %}">Historial</a>
+    <a href="{% url 'suscripcion' %}" class="nav-item {% if request.resolver_match.url_name == 'suscripcion' %}active{% endif %}">Suscripción</a>
+  </nav>
+  <div class="sidebar-player">
+    <div class="player-track">{{ cancion_actual|default:"Shape of You" }}</div>
+    <div class="player-artist">{{ artista_actual|default:"Ed Sheeran" }}</div>
+    <div class="player-bar"><div class="player-progress"></div></div>
+  </div>
+</aside>
+<main class="main">
+  <div class="page-content">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends 'plataforma/base.html' %}
+{% block content %}
+<div class="card">
+    <div class="card-header-premium">
+        <h2 class="card-title">Catálogo Musical</h2>
+        <span class="card-action-btn">Artistas Populares</span>
+    </div>
+    {% if artistas %}
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Puesto</th>
+                    <th>Artista</th>
+                    <th>País de Origen</th>
+                    <th style="text-align: right;">Total Reproducciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for artista in artistas %}
+                    <tr>
+                        <td class="ranking-num">{{ forloop.counter }}</td>
+                        <td><strong>{{ artista.Artista }}</strong></td>
+                        <td>{{ artista.Pais }}</td>
+                        <td class="reps-num" style="text-align: right;">{{ artista.TotalReproducciones }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-empty">No se registran datos de artistas en el catálogo.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'plataforma/base.html' %}
+{% block content %}
+
+<div class="card" style="margin-bottom: 2.5rem; padding: 0;">
+    <form method="GET" action="{% url 'historial' %}" class="filter-bar">
+        <div class="filter-group">
+            <label>Fecha de Inicio</label>
+            <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <label>Fecha de Fin</label>
+            <input type="date" name="fecha_fin" value="{{ fecha_fin }}" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <label>Filtrar por Género</label>
+            <div class="filter-select-custom">
+                <select name="genero">
+                    <option value="">Todos los géneros</option>
+                    {% for gen in lista_generos %}
+                        <option value="{{ gen }}" {% if genero_seleccionado == gen %}selected{% endif %}>{{ gen }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary">
+                Generar Reporte
+            </button>
+            <button type="button" onclick="window.print()" class="btn btn-ghost">
+                Exportar PDF
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="historial-grid">
+    <div class="card">
+        <div class="card-header-premium">
+            <h2 class="card-title">Historial de Reproducción</h2>
+            <span class="card-action-btn">Reporte de Auditoría</span>
+        </div>
+
+        {% if reporte_datos %}
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Fecha / Hora</th>
+                        <th>Canción</th>
+                        <th>Artista</th>
+                        <th>Género</th>
+                        <th style="text-align: right;">Duración</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in reporte_datos %}
+                        <tr>
+                            <td style="font-size: 0.8rem; color: var(--ink-3);">{{ item.FechaHora }}</td>
+                            <td><strong>{{ item.Cancion }}</strong></td>
+                            <td>{{ item.Artista }}</td>
+                            <td><span class="badge-plan badge-gratuito-table">{{ item.Genero }}</span></td>
+                            <td style="text-align: right; font-weight: 500; color: var(--gold);">{{ item.Segundos }} s</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-empty">No se registran datos que coincidan con la búsqueda.</p>
+        {% endif %}
+    </div>
+
+    <div class="card" style="align-self: start;">
+        <div class="card-header-premium">
+            <h2 class="card-title">Top 10 Oyente</h2>
+            <span class="card-action-btn">Recientes</span>
+        </div>
+        
+        {% if reporte_datos %}
+            <div class="top-ranking-list">
+                {% for item in reporte_datos|slice:":10" %}
+                    <div class="top-ranking-item">
+                        <span class="top-rank-num">{{ forloop.counter }}</span>
+                        <div class="top-song-details">
+                            <span class="top-song-title">{{ item.Cancion }}</span>
+                            <span class="top-song-artist">{{ item.Artista }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-empty">Sin reproducciones disponibles.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
