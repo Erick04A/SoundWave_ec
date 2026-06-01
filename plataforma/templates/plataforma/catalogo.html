@@ -1,33 +1,262 @@
 {% extends 'plataforma/base.html' %}
 {% block content %}
-<div class="card">
-    <div class="card-header-premium">
-        <h2 class="card-title">Catálogo Musical</h2>
-        <span class="card-action-btn">Artistas Populares</span>
+
+<div class="catalogo-header">
+    <div>
+        <h1 class="catalogo-title">Catálogo Musical</h1>
+        <p class="catalogo-sub">Explora el universo de artistas y canciones disponibles en la plataforma</p>
     </div>
-    {% if artistas %}
-        <table class="table-custom">
-            <thead>
-                <tr>
-                    <th style="width: 80px;">Puesto</th>
-                    <th>Artista</th>
-                    <th>País de Origen</th>
-                    <th style="text-align: right;">Total Reproducciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for artista in artistas %}
-                    <tr>
-                        <td class="ranking-num">{{ forloop.counter }}</td>
-                        <td><strong>{{ artista.Artista }}</strong></td>
-                        <td>{{ artista.Pais }}</td>
-                        <td class="reps-num" style="text-align: right;">{{ artista.TotalReproducciones }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p class="text-empty">No se registran datos de artistas en el catálogo.</p>
+    {% if filtro_artista or filtro_genero %}
+    <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}" class="btn-limpiar-filtros">
+        Limpiar filtros
+    </a>
     {% endif %}
 </div>
+
+<form id="filter-form" method="GET" action="{% url 'catalogo' %}">
+    <input type="hidden" name="id_usuario" value="{{ id_usuario }}">
+    <div class="catalogo-filter-bar">
+
+        <div class="filter-field filter-field-search">
+            <label for="search-input" class="filter-label">Buscar cancion o artista</label>
+            <div class="search-input-wrapper">
+                <svg class="search-icon-svg" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M13 13L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input
+                    id="search-input"
+                    type="text"
+                    class="catalogo-search-input"
+                    placeholder="Titulo, artista o album..."
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        <div class="filter-field">
+            <label for="filtro_artista" class="filter-label">Artista</label>
+            <div class="catalogo-select-wrapper">
+                <select id="filtro_artista" name="filtro_artista" class="catalogo-select" onchange="document.getElementById('filter-form').submit()">
+                    <option value="">Todos los artistas</option>
+                    {% for artista in lista_artistas_dropdown %}
+                    <option value="{{ artista }}" {% if artista == filtro_artista %}selected{% endif %}>{{ artista }}</option>
+                    {% endfor %}
+                </select>
+                <svg class="select-arrow-svg" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 0L5 6L10 0H0Z" fill="currentColor"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="filter-field">
+            <label for="filtro_genero" class="filter-label">Genero musical</label>
+            <div class="catalogo-select-wrapper">
+                <select id="filtro_genero" name="filtro_genero" class="catalogo-select" onchange="document.getElementById('filter-form').submit()">
+                    <option value="">Todos los generos</option>
+                    {% for genero in lista_generos_dropdown %}
+                    <option value="{{ genero }}" {% if genero == filtro_genero %}selected{% endif %}>{{ genero }}</option>
+                    {% endfor %}
+                </select>
+                <svg class="select-arrow-svg" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 0L5 6L10 0H0Z" fill="currentColor"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="filter-field filter-field-action">
+            <label class="filter-label">&nbsp;</label>
+            <button type="submit" class="btn-aplicar">Aplicar</button>
+        </div>
+
+    </div>
+</form>
+
+{% if filtro_artista or filtro_genero %}
+<div class="filtros-activos-bar">
+    <span class="filtros-activos-label">Filtrando por:</span>
+    {% if filtro_artista %}
+    <span class="filtro-chip">
+        Artista: <strong>{{ filtro_artista }}</strong>
+        <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}{% if filtro_genero %}&filtro_genero={{ filtro_genero }}{% endif %}" class="chip-remove" title="Quitar filtro">x</a>
+    </span>
+    {% endif %}
+    {% if filtro_genero %}
+    <span class="filtro-chip">
+        Genero: <strong>{{ filtro_genero }}</strong>
+        <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}{% if filtro_artista %}&filtro_artista={{ filtro_artista }}{% endif %}" class="chip-remove" title="Quitar filtro">x</a>
+    </span>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header-premium">
+        <h2 class="card-title">Artistas Populares</h2>
+        <span class="card-action-btn">Ranking por reproducciones</span>
+    </div>
+    {% if artistas %}
+    <table class="table-custom" id="tabla-artistas">
+        <thead>
+            <tr>
+                <th style="width: 80px;">Puesto</th>
+                <th>Artista</th>
+                <th>Pais de Origen</th>
+                <th style="text-align: right;">Total Reproducciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for artista in artistas %}
+            <tr class="artista-row"
+                data-artista="{{ artista.nombre_artistico|lower }}"
+                data-pais="{{ artista.pais|lower }}">
+                <td class="ranking-num">{{ forloop.counter }}</td>
+                <td><strong>{{ artista.nombre_artistico }}</strong></td>
+                <td>{{ artista.pais }}</td>
+                <td class="reps-num" style="text-align: right;">{{ artista.total_reproducciones }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p id="artistas-empty-msg" class="text-empty" style="display:none; margin-top: 1.5rem;">Ningun artista coincide con la busqueda.</p>
+    {% else %}
+    <p class="text-empty">No se registran datos de artistas en el catalogo.</p>
+    {% endif %}
+</div>
+
+<div class="card" style="margin-bottom: 2.5rem;">
+    <div class="card-header-premium">
+        <h2 class="card-title">Canciones del Catalogo</h2>
+        <span class="card-action-btn" id="canciones-counter">
+            {% if filtro_artista or filtro_genero %}{{ canciones|length }} resultado{% if canciones|length != 1 %}s{% endif %}{% else %}Top 20 Mas Escuchadas{% endif %}
+        </span>
+    </div>
+    {% if canciones %}
+    <table class="table-custom" id="tabla-canciones">
+        <thead>
+            <tr>
+                <th style="width: 60px; text-align: center;">Escuchar</th>
+                <th>Titulo</th>
+                <th>Artista</th>
+                <th>Album</th>
+                <th style="text-align: center; width: 100px;">Duracion</th>
+                <th style="text-align: right; width: 150px;">Reproducciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbody-canciones">
+            {% for cancion in canciones %}
+            <tr id="cancion-row-{{ cancion.id_cancion }}"
+                class="cancion-row"
+                data-titulo="{{ cancion.Cancion|lower }}"
+                data-artista="{{ cancion.Artista|lower }}"
+                data-album="{{ cancion.Album|lower }}">
+                <td style="text-align: center;">
+                    <button id="btn-play-{{ cancion.id_cancion }}" class="btn btn-gold btn-play" data-id="{{ cancion.id_cancion }}" onclick="reproducirCancion(this)" style="padding: 0.35rem 0.7rem; font-size: 0.9rem; border-radius: 50%; cursor: pointer; border: none; font-family: sans-serif;">
+                        &#9654;
+                    </button>
+                </td>
+                <td><strong>{{ cancion.Cancion }}</strong></td>
+                <td>{{ cancion.Artista }}</td>
+                <td><span style="color: var(--ink-3); font-size: 0.9rem;">{{ cancion.Album }}</span></td>
+                <td style="text-align: center; color: var(--gold); font-weight: 500;">{{ cancion.DuracionFormateada }}</td>
+                <td class="reps-num-{{ cancion.id_cancion }}" style="text-align: right; font-weight: 600;">{{ cancion.Reproducciones }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p id="canciones-empty-msg" class="text-empty" style="display:none; margin-top: 1.5rem;">Ninguna cancion coincide con la busqueda.</p>
+    {% else %}
+    <p class="text-empty">No se registran canciones con los filtros seleccionados.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const searchInput = document.getElementById('search-input');
+
+function filtrarTablas() {
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    const artRowsAll = document.querySelectorAll('.artista-row');
+    let artVisible = 0;
+    artRowsAll.forEach(row => {
+        const texto = (row.dataset.artista || '') + ' ' + (row.dataset.pais || '');
+        if (!query || texto.includes(query)) {
+            row.style.display = '';
+            artVisible++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    const artEmptyMsg = document.getElementById('artistas-empty-msg');
+    if (artEmptyMsg) artEmptyMsg.style.display = artVisible === 0 ? '' : 'none';
+
+    const canRowsAll = document.querySelectorAll('.cancion-row');
+    let canVisible = 0;
+    canRowsAll.forEach(row => {
+        const texto = (row.dataset.titulo || '') + ' ' + (row.dataset.artista || '') + ' ' + (row.dataset.album || '');
+        if (!query || texto.includes(query)) {
+            row.style.display = '';
+            canVisible++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    const canEmptyMsg = document.getElementById('canciones-empty-msg');
+    if (canEmptyMsg) canEmptyMsg.style.display = canVisible === 0 ? '' : 'none';
+
+    const counter = document.getElementById('canciones-counter');
+    if (counter && query) {
+        counter.textContent = canVisible + (canVisible === 1 ? ' resultado' : ' resultados');
+    }
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', filtrarTablas);
+}
+
+function reproducirCancion(btn) {
+    const idCancion = btn.getAttribute('data-id');
+    const original = btn.innerHTML;
+    btn.innerHTML = '&#8987;';
+    btn.disabled = true;
+
+    fetch('/catalogo/reproducir/' + idCancion + '/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const repsEl = document.querySelector('.reps-num-' + idCancion);
+                if (repsEl) repsEl.innerText = data.reproducciones.toLocaleString();
+
+                const playerTrack = document.querySelector('.player-track');
+                const playerArtist = document.querySelector('.player-artist');
+                if (playerTrack) playerTrack.innerText = data.titulo;
+                if (playerArtist) playerArtist.innerText = data.artista;
+
+                const sidebarPlayer = document.querySelector('.sidebar-player');
+                if (sidebarPlayer) {
+                    sidebarPlayer.style.transform = 'scale(1.05)';
+                    sidebarPlayer.style.boxShadow = '0 0 15px var(--gold)';
+                    sidebarPlayer.style.transition = 'transform 0.15s ease, box-shadow 0.15s ease';
+                    setTimeout(() => {
+                        sidebarPlayer.style.transform = 'scale(1)';
+                        sidebarPlayer.style.boxShadow = 'none';
+                    }, 250);
+                }
+            } else {
+                alert('Error al reproducir: ' + data.error);
+            }
+        })
+        .catch(err => {
+            console.error('Error AJAX:', err);
+            alert('Error de red o conexion a la base de datos.');
+        })
+        .finally(() => {
+            btn.innerHTML = original;
+            btn.disabled = false;
+        });
+}
+</script>
 {% endblock %}

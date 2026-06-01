@@ -1,7 +1,32 @@
+# Entorno virtual
 venv/
+venv_old/
+
+# Cache de Python
 __pycache__/
 *.pyc
-staticfiles/
+*.pyo
+*.pyd
+
+# Logs
 *.log
-db.sqlite3
+
+# Variables de entorno
 .env
+*.env
+
+# Base de datos local
+*.sqlite3
+*.db
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+*.suo
+*.user
+
+# Agent brain / IDE state
+brain/

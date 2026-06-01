@@ -1,12 +1,69 @@
 {% extends 'plataforma/base.html' %}
 {% block content %}
 
+{% if messages %}
+    <div class="messages-container" style="margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        {% for message in messages %}
+            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #c9a84c); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                <span>{{ message }}</span>
+                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #c9a84c); padding-left: 1rem;">&times;</span>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<style>
+.transaccion-card-exito {
+    border-left: 4px solid #28a745 !important;
+}
+.transaccion-card-fallido {
+    border-left: 4px solid #dc3545 !important;
+}
+</style>
+
+{% if resultado_transaccion %}
+<div class="subscription-card {% if resultado_transaccion.exito %}transaccion-card-exito{% else %}transaccion-card-fallido{% endif %}" style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 0.8rem; font-weight: 600;">Resultado de la Transacción en SoundWaveDB</h3>
+    <div style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; line-height: 1.6;">
+        <p>
+            <strong>Plan de Cuenta:</strong> {{ resultado_transaccion.plan }}<br>
+            <strong>Nueva Fecha de Vencimiento:</strong> {{ resultado_transaccion.fecha_fin }}<br>
+            <strong>Estado Actualizado en BD:</strong> {{ resultado_transaccion.estado }}
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="subscription-card" style="margin-bottom: 2rem;">
+    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 0.8rem; font-weight: 600;">Estado de Suscripción Actual (Consulta de BD)</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; text-align: left; font-family: 'DM Sans', sans-serif;">
+        <div>
+            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;">Plan Activo</span>
+            <strong style="font-size: 1.1rem; color: #1a1a1a;">{{ sub_actual.plan|default:"Gratuito" }}</strong>
+        </div>
+        <div>
+            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;">Fecha de Vencimiento</span>
+            <strong style="font-size: 1.1rem; color: #1a1a1a;">{{ sub_actual.fecha_fin|default:"Indefinida" }}</strong>
+        </div>
+        <div>
+            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;">Estado</span>
+            <div style="margin-top: 0.2rem;">
+                {% if sub_actual.estado == 'Activa' %}
+                    <span class="badge-plan badge-premium-table" style="display: inline-block;">{{ sub_actual.estado }}</span>
+                {% else %}
+                    <span class="badge-plan badge-gratuito-table" style="display: inline-block;">{{ sub_actual.estado|default:"Inactiva" }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="subscription-card">
     <h2>Pasarela de Pagos Interna</h2>
     <div class="info-box-premium">
         <p>Estás gestionando el ciclo de vida transaccional para la suscripción de la cuenta <strong>Suscripción ID: 1</strong>. La operación invocará de manera atómica las reglas de negocio en el servidor SQL Server.</p>
     </div>
-    <form method="POST" action="{% url 'suscripcion' %}">
+    <form method="POST" action="{% url 'suscripcion' %}?id_usuario={{ id_usuario }}">
         {% csrf_token %}
         <div class="form-group">
             <label>Método de Pago Corporativo</label>

@@ -1,0 +1,11 @@
+{
+  "venvPath": ".",
+  "venv": "venv",
+  "pythonPath": "./venv/Scripts/python.exe",
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "off",
+  "useLibraryCodeForTypes": true,
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "none",
+  "reportUnknownMemberType": "none"
+}

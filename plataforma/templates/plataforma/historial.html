@@ -3,6 +3,7 @@
 
 <div class="card" style="margin-bottom: 2.5rem; padding: 0;">
     <form method="GET" action="{% url 'historial' %}" class="filter-bar">
+        <input type="hidden" name="id_usuario" value="{{ id_usuario }}">
         <div class="filter-group">
             <label>Fecha de Inicio</label>
             <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}" class="filter-input">
@@ -26,9 +27,9 @@
             <button type="submit" class="btn btn-primary">
                 Generar Reporte
             </button>
-            <button type="button" onclick="window.print()" class="btn btn-ghost">
+            <a href="{% url 'exportar_historial_pdf' %}?id_usuario={{ id_usuario }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&genero={{ genero_seleccionado }}" class="btn btn-ghost" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
                 Exportar PDF
-            </button>
+            </a>
         </div>
     </form>
 </div>
@@ -58,7 +59,7 @@
                             <td><strong>{{ item.Cancion }}</strong></td>
                             <td>{{ item.Artista }}</td>
                             <td><span class="badge-plan badge-gratuito-table">{{ item.Genero }}</span></td>
-                            <td style="text-align: right; font-weight: 500; color: var(--gold);">{{ item.Segundos }} s</td>
+                            <td style="text-align: right; font-weight: 500; color: var(--gold);">{{ item.DuracionFormateada }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

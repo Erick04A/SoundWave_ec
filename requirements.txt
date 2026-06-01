@@ -4,3 +4,4 @@ pyodbc
 gunicorn
 whitenoise
 pytz
+reportlab

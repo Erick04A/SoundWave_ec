@@ -1,20 +1,39 @@
 {% extends 'plataforma/base.html' %}
+{% load humanize %}
 {% block content %}
+
+{% if messages %}
+    <div class="messages-container" style="margin-bottom: 2rem;">
+        {% for message in messages %}
+            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #c9a84c); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                <span>{{ message }}</span>
+                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #c9a84c); padding-left: 1rem;">&times;</span>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if error %}
+    <div class="warning-banner" style="background-color: #fcf8e3; border: 1px solid #faebcc; border-left: 5px solid #8a6d3b; padding: 1.2rem; border-radius: 8px; color: #8a6d3b; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+        <span><strong>¡Advertencia de Robustez!</strong> {{ error }} Mostrando datos de respaldo locales.</span>
+        <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; padding-left: 1rem;">&times;</span>
+    </div>
+{% endif %}
 
 <div class="stats-grid">
     <div class="stat-card">
         <span class="stat-label">Canciones Escuchadas</span>
-        <div class="stat-value">1,248</div>
-        <span class="stat-sub">Actividad del último año</span>
+        <div class="stat-value">{{ datos.stats.canciones_escuchadas }}</div>
+        <span class="stat-sub">Actividad real en plataforma</span>
     </div>
     <div class="stat-card">
         <span class="stat-label">Álbumes en Biblioteca</span>
-        <div class="stat-value">{{ albumes|length }}</div>
+        <div class="stat-value">{{ datos.stats.albumes_biblioteca }}</div>
         <span class="stat-sub">Sincronizados en tu espacio</span>
     </div>
     <div class="stat-card">
         <span class="stat-label">Horas de Reproducción</span>
-        <div class="stat-value">84.5</div>
+        <div class="stat-value">{{ datos.stats.horas_reproduccion }}</div>
         <span class="stat-sub">Tiempo total en SoundWave</span>
     </div>
 </div>
@@ -33,9 +52,9 @@
             <p class="profile-detail-label">Nivel de Suscripción</p>
             <div style="margin-top: 0.25rem;">
                 {% if plan == 'Premium' %}
-                    <span class="badge-plan badge-premium-table">Premium Activo</span>
+                <span class="badge-plan badge-premium-table">Premium Activo</span>
                 {% else %}
-                    <span class="badge-plan badge-gratuito-table">Cuenta Gratuita</span>
+                <span class="badge-plan badge-gratuito-table">Cuenta Gratuita</span>
                 {% endif %}
             </div>
         </div>
@@ -51,117 +70,27 @@
             <span class="card-action-btn">Colección de Álbumes</span>
         </div>
         {% if albumes %}
-            <table class="table-custom">
-                <thead>
-                    <tr>
-                        <th>Álbum</th>
-                        <th>Artista</th>
-                        <th>Fecha de Registro</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for album in albumes %}
-                        <tr>
-                            <td><strong>{{ album.1 }}</strong></td>
-                            <td>{{ album.2 }}</td>
-                            <td>{{ album.3 }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Álbum</th>
+                    <th>Artista</th>
+                    <th>Fecha de Registro</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for album in albumes %}
+                <tr>
+                    <td><strong>{{ album.1 }}</strong></td>
+                    <td>{{ album.2 }}</td>
+                    <td>{{ album.3 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-            <p class="text-empty">Tu biblioteca personal se encuentra vacía.</p>
+        <p class="text-empty">Tu biblioteca personal se encuentra vacía.</p>
         {% endif %}
-    </div>
-</div>
-
-<div class="card" id="registro-section" style="margin-bottom: 2.5rem;">
-    <div class="card-header-premium" style="margin-bottom: 1.5rem;">
-        <h2 class="card-title">Control de Registros y Oyentes</h2>
-    </div>
-
-    <div class="tabs-container">
-        <button type="button" onclick="switchTab('nuevo-oyente')" id="btn-tab-nuevo" class="tab-btn tab-active">Nuevo Oyente</button>
-        <button type="button" onclick="switchTab('editar-perfil')" id="btn-tab-editar" class="tab-btn">Editar Perfil</button>
-    </div>
-
-    <div id="tab-nuevo-oyente" class="tab-content">
-        <form method="POST" action="{% url 'dashboard' %}">
-            {% csrf_token %}
-            <input type="hidden" name="accion" value="CREATE">
-            
-            <div class="form-two-col">
-                <div class="form-group">
-                    <label>Nombre Completo</label>
-                    <input type="text" name="nombre" required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" name="email" required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>País de Residencia</label>
-                    <input type="text" name="pais" required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Plan de Suscripción</label>
-                    <div class="select-custom">
-                        <select name="plan">
-                            <option value="Gratuito">Gratuito</option>
-                            <option value="Premium">Premium</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 1.5rem;">
-                <button type="submit" class="btn btn-gold">Registrar Nuevo Oyente</button>
-            </div>
-        </form>
-    </div>
-
-    <div id="tab-editar-perfil" class="tab-content" style="display: none;">
-        {% if datos_usuario.estado == 'Inactivo' %}
-            <div style="background-color: var(--gold-pale); border-left: 4px solid var(--gold); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <p style="color: var(--ink); font-size: 0.9rem;">Esta cuenta se encuentra inactiva en el sistema.</p>
-            </div>
-        {% endif %}
-
-        <form method="POST" action="{% url 'dashboard' %}">
-            {% csrf_token %}
-            <input type="hidden" name="accion" id="form-accion" value="SAVE">
-            
-            <div class="form-two-col">
-                <div class="form-group">
-                    <label>Nombre Completo</label>
-                    <input type="text" name="nombre" value="{{ datos_usuario.nombre }}" required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" name="email" value="{{ datos_usuario.email }}" required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Número Telefónico</label>
-                    <input type="text" name="telefono" value="{{ datos_usuario.telefono }}" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>País de Operación</label>
-                    <input type="text" name="pais" value="{{ datos_usuario.pais }}" class="form-input">
-                </div>
-            </div>
-
-            <div class="form-actions-flex">
-                <button type="submit" onclick="document.getElementById('form-accion').value='SAVE';" class="btn btn-primary">
-                    Actualizar Datos del Perfil
-                </button>
-                
-                {% if datos_usuario.estado == 'Activo' %}
-                    <button type="submit" onclick="if(confirm('¿Confirmar baja de cuenta?')){ document.getElementById('form-accion').value='DELETE'; } else { return false; }" class="btn btn-danger">
-                        Dar de baja cuenta
-                    </button>
-                {% endif %}
-            </div>
-        </form>
     </div>
 </div>
 
@@ -171,17 +100,17 @@
         <span class="card-action-btn">Descubrimientos para Ti</span>
     </div>
     {% if recomendaciones %}
-        <div class="rec-grid">
-            {% for rec in recomendaciones %}
-                <div class="rec-card">
-                    <p class="rec-title">{{ rec.Cancion }}</p>
-                    <p class="rec-artist">{{ rec.Artista }}</p>
-                    <span class="rec-tag">{{ rec.Genero }}</span>
-                </div>
-            {% endfor %}
+    <div class="rec-grid">
+        {% for rec in recomendaciones %}
+        <div class="rec-card">
+            <p class="rec-title">{{ rec.Cancion }}</p>
+            <p class="rec-artist">{{ rec.Artista }}</p>
+            <span class="rec-tag">{{ rec.Genero }}</span>
         </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <p class="text-empty">No hemos encontrado recomendaciones basadas en tu historial.</p>
+    <p class="text-empty">No hemos encontrado recomendaciones basadas en tu historial.</p>
     {% endif %}
 </div>
 
@@ -191,27 +120,27 @@
             <h2 class="card-title">Historial Reciente</h2>
             <span class="card-action-btn">Últimas Reproducciones</span>
         </div>
-        {% if historial %}
-            <table class="table-custom">
-                <thead>
-                    <tr>
-                        <th>Canción</th>
-                        <th>Artista</th>
-                        <th>Fecha y Hora</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in historial %}
-                        <tr>
-                            <td><strong>{{ item.1 }}</strong></td>
-                            <td>{{ item.2 }}</td>
-                            <td>{{ item.3 }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        {% if datos.historial_reciente %}
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Canción</th>
+                    <th>Artista</th>
+                    <th>Fecha y Hora</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in datos.historial_reciente %}
+                <tr>
+                    <td><strong>{{ item.titulo_cancion }}</strong></td>
+                    <td>{{ item.nombre_artistico }}</td>
+                    <td>{{ item.fecha_hora }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-            <p class="text-empty">No se registran canciones escuchadas recientemente.</p>
+        <p class="text-empty">No se registran canciones escuchadas recientemente.</p>
         {% endif %}
     </div>
 
@@ -220,45 +149,47 @@
             <h2 class="card-title">Top 10 Global</h2>
             <span class="card-action-btn">Las más escuchadas</span>
         </div>
-        {% if top_canciones %}
-            <table class="table-custom">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Canción</th>
-                        <th>Artista</th>
-                        <th>Reproducciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for cancion in top_canciones %}
-                        <tr>
-                            <td style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--gold); font-weight: 600;">{{ forloop.counter }}</td>
-                            <td><strong>{{ cancion.Cancion }}</strong></td>
-                            <td>{{ cancion.Artista }}</td>
-                            <td style="color: var(--ink-3);">{{ cancion.Reproducciones }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        {% if datos.top10_global %}
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Canción</th>
+                    <th>Artista</th>
+                    <th>Reproducciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in datos.top10_global %}
+                <tr>
+                    <td
+                        style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--gold); font-weight: 600;">
+                        {{ forloop.counter }}</td>
+                    <td><strong>{{ item.titulo_cancion }}</strong></td>
+                    <td>{{ item.nombre_artistico }}</td>
+                    <td style="color: var(--ink-3);">{{ item.num_reproducciones|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-            <p class="text-empty">No se registran datos acumulados de reproducción.</p>
+        <p class="text-empty">No se registran datos acumulados de reproducción.</p>
         {% endif %}
     </div>
 </div>
 
 <script>
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
-    
-    if (tabId === 'nuevo-oyente') {
-        document.getElementById('tab-nuevo-oyente').style.display = 'block';
-        document.getElementById('btn-tab-nuevo').classList.add('tab-active');
-    } else {
-        document.getElementById('tab-editar-perfil').style.display = 'block';
-        document.getElementById('btn-tab-editar').classList.add('tab-active');
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
+
+        if (tabId === 'nuevo-oyente') {
+            document.getElementById('tab-nuevo-oyente').style.display = 'block';
+            document.getElementById('btn-tab-nuevo').classList.add('tab-active');
+        } else {
+            document.getElementById('tab-editar-perfil').style.display = 'block';
+            document.getElementById('btn-tab-editar').classList.add('tab-active');
+        }
     }
-}
 </script>
 {% endblock %}

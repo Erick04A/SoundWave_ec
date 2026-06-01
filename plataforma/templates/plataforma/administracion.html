@@ -1,0 +1,398 @@
+{% extends 'plataforma/base.html' %}
+{% load humanize %}
+{% block content %}
+
+{% if messages %}
+    <div class="messages-container" style="margin-bottom: 2rem;">
+        {% for message in messages %}
+            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #c9a84c); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                <span>{{ message }}</span>
+                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #c9a84c); padding-left: 1rem;">&times;</span>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Premium Navigation Header -->
+<div class="card" style="margin-bottom: 2rem; border-color: var(--cream-3); background: #ffffff;">
+    <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+        <h2 class="card-title" style="font-size: 1.8rem; font-weight: 400; color: #1A1714;">Panel de Administración</h2>
+        <span class="card-action-btn">Consola de Control</span>
+    </div>
+    
+    <!-- Tab Navigation using global tabs style -->
+    <div class="tabs-container" style="margin-bottom: 0;">
+        <button class="tab-btn tab-active" onclick="switchTab(event, 'oyentes')">
+            Oyentes ({{ oyentes|length }})
+        </button>
+        <button class="tab-btn" onclick="switchTab(event, 'artistas')">
+            Artistas ({{ artistas|length }})
+        </button>
+        <button class="tab-btn" onclick="switchTab(event, 'sistema')">
+            Sistema
+        </button>
+    </div>
+</div>
+
+<!-- TAB: OYENTES -->
+<div id="tab-oyentes" class="tab-content">
+    <div class="card">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title">Oyentes Registrados</h2>
+            <span class="card-action-btn">Gestión de Usuarios</span>
+        </div>
+        
+        <!-- Premium Filter and Search bar -->
+        <div class="filter-bar" style="margin-bottom: 2rem;">
+            <div class="filter-group" style="flex: 2;">
+                <label>Buscar Oyente</label>
+                <input type="text" id="buscar-oyente" 
+                       placeholder="Buscar por nombre o ID..." 
+                       oninput="filtrarTabla('tabla-oyentes', this.value)"
+                       class="filter-input"/>
+            </div>
+            <div class="filter-group">
+                <label>Estado de Cuenta</label>
+                <div class="filter-select-custom">
+                    <select id="filtro-estado-oyente" onchange="filtrarPorEstado('tabla-oyentes', this.value)">
+                        <option value="">Todos los estados</option>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                        <option value="Suspendido">Suspendido</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Nivel de Plan</label>
+                <div class="filter-select-custom">
+                    <select id="filtro-plan" onchange="filtrarPorPlan('tabla-oyentes', this.value)">
+                        <option value="">Todos los planes</option>
+                        <option value="PREMIUM">Premium</option>
+                        <option value="GRATUITO">Gratuito</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Table Oyentes -->
+        <table id="tabla-oyentes" class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Estado</th>
+                    <th>Fecha Registro</th>
+                    <th style="text-align: center; width: 180px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in oyentes %}
+                <tr data-nombre="{{ u.nombre_usuario|lower }}" 
+                    data-id="{{ u.id_usuario }}"
+                    data-estado="{{ u.estado }}"
+                    data-plan="{{ u.plan_activo|upper }}">
+                    <td class="ranking-num">#{{ u.id_usuario }}</td>
+                    <td><strong>{{ u.nombre_usuario }}</strong></td>
+                    <td style="color: var(--ink-3);">{{ u.email_usuario }}</td>
+                    <td>
+                        {% if u.plan_activo == 'Premium' %}
+                            <span class="badge-plan badge-premium-table">Premium</span>
+                        {% else %}
+                            <span class="badge-plan badge-gratuito-table">Gratuito</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.estado == 'Activo' %}
+                            <span style="color: #27ae60; font-weight: 600;">{{ u.estado }}</span>
+                        {% else %}
+                            <span style="color: #c0392b; font-weight: 600;">{{ u.estado }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="color: var(--ink-3);">{{ u.fecha_registro }}</td>
+                    <td style="text-align: center;">
+                        {% if u.id_usuario != 12 %}
+                        <div style="display: inline-flex; gap: 8px;">
+                            <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                                    onclick="abrirEdicion({{ u.id_usuario }}, '{{ u.nombre_usuario|escapejs }}', '{{ u.email_usuario|escapejs }}', '{{ u.estado|escapejs }}')">
+                                Editar
+                            </button>
+                            <form method="post" action="/administracion/eliminar/{{ u.id_usuario }}/?id_usuario={{ id_usuario }}" 
+                                  id="del-{{ u.id_usuario }}" style="display:inline; margin: 0;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                                        onclick="confirmarEliminar({{ u.id_usuario }}, '{{ u.nombre_usuario|escapejs }}')">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span style="font-size: 0.8rem; color: var(--gold); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Administrador</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-empty" style="text-align: center; padding: 2rem;">No hay oyentes registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formulario Nuevo Oyente -->
+    <div class="card" style="margin-top: 2rem;">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title">Registrar Nuevo Oyente</h2>
+            <span class="card-action-btn">Nuevo Registro</span>
+        </div>
+        <form method="post" action="/administracion/crear/?id_usuario={{ id_usuario }}">
+            {% csrf_token %}
+            <div class="form-two-col">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="nombre_usuario" placeholder="Ej: Juan Pérez" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email_usuario" placeholder="Ej: juan@soundwave.ec" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>País de Residencia</label>
+                    <input type="text" name="pais" placeholder="Ej: Ecuador" class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Plan de Suscripción</label>
+                    <div class="select-custom">
+                        <select name="plan">
+                            <option value="Gratuito">Gratuito</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-gold">Registrar Nuevo Oyente</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal Editar en Diálogo Premium -->
+    <div id="modal-editar" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+            <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+                <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Editar Oyente</h2>
+            </div>
+            <form method="post" id="form-editar" action="">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre_usuario" id="edit-nombre" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email_usuario" id="edit-email" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Estado de Cuenta</label>
+                    <div class="select-custom">
+                        <select name="estado" id="edit-estado">
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                            <option value="Suspendido">Suspendido</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" onclick="cerrarEdicion()" class="btn btn-ghost">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: ARTISTAS -->
+<div id="tab-artistas" class="tab-content" style="display:none">
+    <div class="card">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title">Artistas en la Plataforma</h2>
+            <span class="card-action-btn">Catálogo de Artistas</span>
+        </div>
+        
+        <!-- Premium Filter artists -->
+        <div class="filter-bar" style="margin-bottom: 2rem;">
+            <div class="filter-group" style="flex: 2;">
+                <label>Buscar Artista</label>
+                <input type="text" id="buscar-artista"
+                       placeholder="Buscar artista por nombre o ID..."
+                       oninput="filtrarTabla('tabla-artistas', this.value)"
+                       class="filter-input"/>
+            </div>
+            <div class="filter-group">
+                <label>País de Origen</label>
+                <div class="filter-select-custom">
+                    <select onchange="filtrarPorPais('tabla-artistas', this.value)">
+                        <option value="">Todos los países</option>
+                        <option value="Puerto Rico">Puerto Rico</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="USA">USA</option>
+                        <option value="UK">UK</option>
+                        <option value="México">México</option>
+                        <option value="España">España</option>
+                        <option value="Ecuador">Ecuador</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Table Artistas -->
+        <table id="tabla-artistas" class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Nombre Artístico</th>
+                    <th>Email</th>
+                    <th>País</th>
+                    <th style="text-align: center;">Álbumes</th>
+                    <th style="text-align: center;">Canciones</th>
+                    <th style="text-align: right;">Reproducciones</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in artistas %}
+                <tr data-nombre="{{ a.nombre_artistico|lower }} {{ a.nombre_usuario|lower }}"
+                    data-id="{{ a.id_usuario }}"
+                    data-pais="{{ a.pais }}">
+                    <td class="ranking-num">#{{ a.id_usuario }}</td>
+                    <td><strong>{{ a.nombre_artistico }}</strong></td>
+                    <td style="color: var(--ink-3);">{{ a.email_usuario }}</td>
+                    <td>{{ a.pais|default:"—" }}</td>
+                    <td style="text-align: center; font-weight: 600;">{{ a.total_albumes }}</td>
+                    <td style="text-align: center; font-weight: 600;">{{ a.total_canciones }}</td>
+                    <td style="text-align: right; color: var(--gold); font-weight: 600;">{{ a.total_reproducciones|intcomma }}</td>
+                    <td>
+                        {% if a.estado == 'Activo' %}
+                            <span style="color: #27ae60; font-weight: 600;">{{ a.estado }}</span>
+                        {% else %}
+                            <span style="color: #c0392b; font-weight: 600;">{{ a.estado }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-empty" style="text-align: center; padding: 2rem;">No hay artistas registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB: SISTEMA -->
+<div id="tab-sistema" class="tab-content" style="display:none">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Usuarios Totales</span>
+            <div class="stat-value">{{ sistema_stats.total_usuarios }}</div>
+            <span class="stat-sub">Cuentas creadas en SoundWave</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Canciones en Catálogo</span>
+            <div class="stat-value">{{ sistema_stats.total_canciones }}</div>
+            <span class="stat-sub">Archivos multimedia activos</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Álbumes Publicados</span>
+            <div class="stat-value">{{ sistema_stats.total_albumes }}</div>
+            <span class="stat-sub">Colecciones registradas</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Reproducciones Totales</span>
+            <div class="stat-value">{{ sistema_stats.total_reproducciones|intcomma }}</div>
+            <span class="stat-sub">Interacciones globales</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Suscripciones Activas</span>
+            <div class="stat-value">{{ sistema_stats.suscripciones_activas }}</div>
+            <span class="stat-sub">Cuentas premium recurrentes</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Total Regalías Pagadas</span>
+            <div class="stat-value">${{ sistema_stats.total_regalias|floatformat:2 }}</div>
+            <span class="stat-sub">Compensación total a creadores</span>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript de tabs y búsqueda sin emojis -->
+<script>
+function switchTab(event, tab) {
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+    document.getElementById('tab-' + tab).style.display = 'block';
+    event.currentTarget.classList.add('tab-active');
+}
+
+function filtrarTabla(tablaId, valor) {
+    const tabla = document.getElementById(tablaId);
+    const filas = tabla.querySelectorAll('tbody tr');
+    const v = valor.toLowerCase().trim();
+    filas.forEach(fila => {
+        const nombre = fila.dataset.nombre || '';
+        const id = fila.dataset.id || '';
+        fila.style.display = (nombre.includes(v) || id.includes(v)) ? '' : 'none';
+    });
+}
+
+function filtrarPorEstado(tablaId, estado) {
+    const tabla = document.getElementById(tablaId);
+    tabla.querySelectorAll('tbody tr').forEach(fila => {
+        if (!estado || fila.dataset.estado === estado) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+function filtrarPorPlan(tablaId, plan) {
+    const tabla = document.getElementById(tablaId);
+    tabla.querySelectorAll('tbody tr').forEach(fila => {
+        if (!plan || fila.dataset.plan === plan) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+function filtrarPorPais(tablaId, pais) {
+    const tabla = document.getElementById(tablaId);
+    tabla.querySelectorAll('tbody tr').forEach(fila => {
+        if (!pais || fila.dataset.pais === pais) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+function abrirEdicion(id, nombre, email, estado) {
+    document.getElementById('edit-nombre').value = nombre;
+    document.getElementById('edit-email').value = email;
+    document.getElementById('edit-estado').value = estado;
+    document.getElementById('form-editar').action = `/administracion/editar/${id}/?id_usuario={{ id_usuario }}`;
+    document.getElementById('modal-editar').style.display = 'flex';
+}
+
+function cerrarEdicion() {
+    document.getElementById('modal-editar').style.display = 'none';
+}
+
+function confirmarEliminar(id, nombre) {
+    if (confirm('¿Eliminar a ' + nombre + ' (ID #' + id + ')? Esta acción no se puede deshacer.')) {
+        document.getElementById('del-' + id).submit();
+    }
+}
+</script>
+
+{% endblock %}
