@@ -1,0 +1,724 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificación de Teléfono - SoundWave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1A1714;
+      --ink-2: #3D3730;
+      --ink-3: #6B6259;
+      --gold: #C4973A;
+      --gold-2: #D4AA55;
+      --cream: #FAF7F2;
+      --cream-2: #F2EDE4;
+      --cream-3: #E8E0D4;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--ink);
+      color: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      position: relative;
+    }
+    .verify-container {
+      width: 100%;
+      max-width: 450px;
+      background: #24201C;
+      border: 1px solid var(--ink-2);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+    .logo-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .logo-img {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      filter: brightness(0) invert(1) sepia(1) saturate(3.5) hue-rotate(10deg) brightness(1.05) drop-shadow(0 0 12px rgba(184, 146, 63, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+      margin-bottom: 0.5rem;
+    }
+    .form-title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 1.5rem;
+      align-self: flex-start;
+      border-left: 3px solid var(--gold);
+      padding-left: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .form-group {
+      margin-bottom: 1.25rem;
+      width: 100%;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cream-3);
+      margin-bottom: 0.4rem;
+    }
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+    }
+    .phone-prefix {
+      width: 100px;
+      padding: 0.85rem 0.5rem;
+      background-color: var(--ink);
+      border: 1px solid var(--ink-2);
+      border-radius: 8px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23FAF7F2' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>");
+      background-repeat: no-repeat;
+      background-position: right 0.5rem center;
+      background-size: 0.8rem;
+      padding-right: 1.5rem;
+    }
+    .form-input {
+      flex: 1;
+      padding: 0.85rem 1rem;
+      background-color: var(--ink);
+      border: 1px solid var(--ink-2);
+      border-radius: 8px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+    .form-input:focus, .phone-prefix:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(196,151,58,0.2);
+    }
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.9rem;
+      background-color: var(--gold);
+      color: #ffffff;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.25s ease;
+      margin-top: 0.5rem;
+    }
+    .btn-submit:hover {
+      background-color: var(--gold-2);
+      box-shadow: 0 5px 15px rgba(196,151,58,0.4);
+      transform: translateY(-1px);
+    }
+    .btn-submit:disabled {
+      background-color: var(--ink-2);
+      color: var(--ink-3);
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    .info-text {
+      font-size: 0.82rem;
+      color: var(--cream-3);
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+    .step-section {
+      width: 100%;
+    }
+    .hidden {
+      display: none;
+    }
+    .btn-back {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 9999;
+      display: inline-block;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 8px 18px;
+      transition: all 0.2s ease;
+    }
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 0.8s ease-in-out infinite;
+      margin-right: 0.5rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .laser-background {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      perspective: 1px;
+      transform-style: preserve-3d;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+    .laser-bar {
+      height: 15%;
+      width: 4%;
+      float: left;
+      border: 12px solid;
+      animation: rotateLaser 2.5s infinite alternate;
+    }
+    @keyframes rotateLaser {
+      0% {
+        transform: translateZ(-3000px);
+      }
+      100% {
+        transform: rotateY(-10deg);
+      }
+    }
+    .laser-bar:nth-child(1) {
+      border-color: #BE185D;
+      animation-delay: -0.00s;
+    }
+    .laser-bar:nth-child(2) {
+      border-color: #BD1B5C;
+      animation-delay: -0.03s;
+    }
+    .laser-bar:nth-child(3) {
+      border-color: #BD1E5B;
+      animation-delay: -0.06s;
+    }
+    .laser-bar:nth-child(4) {
+      border-color: #BD215A;
+      animation-delay: -0.09s;
+    }
+    .laser-bar:nth-child(5) {
+      border-color: #BD2459;
+      animation-delay: -0.12s;
+    }
+    .laser-bar:nth-child(6) {
+      border-color: #BD2759;
+      animation-delay: -0.15s;
+    }
+    .laser-bar:nth-child(7) {
+      border-color: #BD2A58;
+      animation-delay: -0.18s;
+    }
+    .laser-bar:nth-child(8) {
+      border-color: #BC2D57;
+      animation-delay: -0.21s;
+    }
+    .laser-bar:nth-child(9) {
+      border-color: #BC3156;
+      animation-delay: -0.24s;
+    }
+    .laser-bar:nth-child(10) {
+      border-color: #BC3456;
+      animation-delay: -0.27s;
+    }
+    .laser-bar:nth-child(11) {
+      border-color: #BC3755;
+      animation-delay: -0.30s;
+    }
+    .laser-bar:nth-child(12) {
+      border-color: #BC3A54;
+      animation-delay: -0.33s;
+    }
+    .laser-bar:nth-child(13) {
+      border-color: #BC3D53;
+      animation-delay: -0.36s;
+    }
+    .laser-bar:nth-child(14) {
+      border-color: #BC4053;
+      animation-delay: -0.39s;
+    }
+    .laser-bar:nth-child(15) {
+      border-color: #BB4352;
+      animation-delay: -0.42s;
+    }
+    .laser-bar:nth-child(16) {
+      border-color: #BB4651;
+      animation-delay: -0.45s;
+    }
+    .laser-bar:nth-child(17) {
+      border-color: #BB4A50;
+      animation-delay: -0.48s;
+    }
+    .laser-bar:nth-child(18) {
+      border-color: #BB4D4F;
+      animation-delay: -0.51s;
+    }
+    .laser-bar:nth-child(19) {
+      border-color: #BB504F;
+      animation-delay: -0.54s;
+    }
+    .laser-bar:nth-child(20) {
+      border-color: #BB534E;
+      animation-delay: -0.57s;
+    }
+    .laser-bar:nth-child(21) {
+      border-color: #BA564D;
+      animation-delay: -0.60s;
+    }
+    .laser-bar:nth-child(22) {
+      border-color: #BA594C;
+      animation-delay: -0.63s;
+    }
+    .laser-bar:nth-child(23) {
+      border-color: #BA5C4C;
+      animation-delay: -0.66s;
+    }
+    .laser-bar:nth-child(24) {
+      border-color: #BA5F4B;
+      animation-delay: -0.69s;
+    }
+    .laser-bar:nth-child(25) {
+      border-color: #BA634A;
+      animation-delay: -0.72s;
+    }
+    .laser-bar:nth-child(26) {
+      border-color: #BA6649;
+      animation-delay: -0.75s;
+    }
+    .laser-bar:nth-child(27) {
+      border-color: #BA6949;
+      animation-delay: -0.78s;
+    }
+    .laser-bar:nth-child(28) {
+      border-color: #B96C48;
+      animation-delay: -0.81s;
+    }
+    .laser-bar:nth-child(29) {
+      border-color: #B96F47;
+      animation-delay: -0.84s;
+    }
+    .laser-bar:nth-child(30) {
+      border-color: #B97246;
+      animation-delay: -0.87s;
+    }
+    .laser-bar:nth-child(31) {
+      border-color: #B97545;
+      animation-delay: -0.90s;
+    }
+    .laser-bar:nth-child(32) {
+      border-color: #B97845;
+      animation-delay: -0.93s;
+    }
+    .laser-bar:nth-child(33) {
+      border-color: #B97C44;
+      animation-delay: -0.96s;
+    }
+    .laser-bar:nth-child(34) {
+      border-color: #B87F43;
+      animation-delay: -0.99s;
+    }
+    .laser-bar:nth-child(35) {
+      border-color: #B88242;
+      animation-delay: -1.02s;
+    }
+    .laser-bar:nth-child(36) {
+      border-color: #B88542;
+      animation-delay: -1.05s;
+    }
+    .laser-bar:nth-child(37) {
+      border-color: #B88841;
+      animation-delay: -1.08s;
+    }
+    .laser-bar:nth-child(38) {
+      border-color: #B88B40;
+      animation-delay: -1.11s;
+    }
+    .laser-bar:nth-child(39) {
+      border-color: #B88E3F;
+      animation-delay: -1.14s;
+    }
+    .laser-bar:nth-child(40) {
+      border-color: #B8923F;
+      animation-delay: -1.17s;
+    }
+    .laser-bar:nth-child(41) {
+      border-color: #B8923F;
+      animation-delay: -1.20s;
+    }
+    .laser-bar:nth-child(42) {
+      border-color: #B99443;
+      animation-delay: -1.23s;
+    }
+    .laser-bar:nth-child(43) {
+      border-color: #BA9647;
+      animation-delay: -1.26s;
+    }
+    .laser-bar:nth-child(44) {
+      border-color: #BB984C;
+      animation-delay: -1.29s;
+    }
+    .laser-bar:nth-child(45) {
+      border-color: #BC9A50;
+      animation-delay: -1.32s;
+    }
+    .laser-bar:nth-child(46) {
+      border-color: #BE9D54;
+      animation-delay: -1.35s;
+    }
+    .laser-bar:nth-child(47) {
+      border-color: #BF9F59;
+      animation-delay: -1.38s;
+    }
+    .laser-bar:nth-child(48) {
+      border-color: #C0A15D;
+      animation-delay: -1.41s;
+    }
+    .laser-bar:nth-child(49) {
+      border-color: #C1A361;
+      animation-delay: -1.44s;
+    }
+    .laser-bar:nth-child(50) {
+      border-color: #C3A566;
+      animation-delay: -1.47s;
+    }
+    .laser-bar:nth-child(51) {
+      border-color: #C4A86A;
+      animation-delay: -1.50s;
+    }
+    .laser-bar:nth-child(52) {
+      border-color: #C5AA6E;
+      animation-delay: -1.53s;
+    }
+    .laser-bar:nth-child(53) {
+      border-color: #C6AC73;
+      animation-delay: -1.56s;
+    }
+    .laser-bar:nth-child(54) {
+      border-color: #C8AE77;
+      animation-delay: -1.59s;
+    }
+    .laser-bar:nth-child(55) {
+      border-color: #C9B07B;
+      animation-delay: -1.62s;
+    }
+    .laser-bar:nth-child(56) {
+      border-color: #CAB380;
+      animation-delay: -1.65s;
+    }
+    .laser-bar:nth-child(57) {
+      border-color: #CBB584;
+      animation-delay: -1.68s;
+    }
+    .laser-bar:nth-child(58) {
+      border-color: #CCB788;
+      animation-delay: -1.71s;
+    }
+    .laser-bar:nth-child(59) {
+      border-color: #CEB98D;
+      animation-delay: -1.74s;
+    }
+    .laser-bar:nth-child(60) {
+      border-color: #CFBB91;
+      animation-delay: -1.77s;
+    }
+    .laser-bar:nth-child(61) {
+      border-color: #D0BE95;
+      animation-delay: -1.80s;
+    }
+    .laser-bar:nth-child(62) {
+      border-color: #D1C09A;
+      animation-delay: -1.83s;
+    }
+    .laser-bar:nth-child(63) {
+      border-color: #D3C29E;
+      animation-delay: -1.86s;
+    }
+    .laser-bar:nth-child(64) {
+      border-color: #D4C4A2;
+      animation-delay: -1.89s;
+    }
+    .laser-bar:nth-child(65) {
+      border-color: #D5C6A7;
+      animation-delay: -1.92s;
+    }
+    .laser-bar:nth-child(66) {
+      border-color: #D6C9AB;
+      animation-delay: -1.95s;
+    }
+    .laser-bar:nth-child(67) {
+      border-color: #D8CBAF;
+      animation-delay: -1.98s;
+    }
+    .laser-bar:nth-child(68) {
+      border-color: #D9CDB4;
+      animation-delay: -2.01s;
+    }
+    .laser-bar:nth-child(69) {
+      border-color: #DACFB8;
+      animation-delay: -2.04s;
+    }
+    .laser-bar:nth-child(70) {
+      border-color: #DBD1BC;
+      animation-delay: -2.07s;
+    }
+    .laser-bar:nth-child(71) {
+      border-color: #DCD4C1;
+      animation-delay: -2.10s;
+    }
+    .laser-bar:nth-child(72) {
+      border-color: #DED6C5;
+      animation-delay: -2.13s;
+    }
+    .laser-bar:nth-child(73) {
+      border-color: #DFD8C9;
+      animation-delay: -2.16s;
+    }
+    .laser-bar:nth-child(74) {
+      border-color: #E0DACE;
+      animation-delay: -2.19s;
+    }
+    .laser-bar:nth-child(75) {
+      border-color: #E1DCD2;
+      animation-delay: -2.22s;
+    }
+    .laser-bar:nth-child(76) {
+      border-color: #E3DFD6;
+      animation-delay: -2.25s;
+    }
+    .laser-bar:nth-child(77) {
+      border-color: #E4E1DB;
+      animation-delay: -2.28s;
+    }
+    .laser-bar:nth-child(78) {
+      border-color: #E5E3DF;
+      animation-delay: -2.31s;
+    }
+    .laser-bar:nth-child(79) {
+      border-color: #E6E5E3;
+      animation-delay: -2.34s;
+    }
+    .laser-bar:nth-child(80) {
+      border-color: #E8E8E8;
+      animation-delay: -2.37s;
+    }
+  </style>
+</head>
+<body>
+  <div class="laser-background">
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+    <div class="laser-bar"></div>
+  </div>
+
+  <a href="/registro/" class="btn-back">Regresar</a>
+
+  <div class="verify-container">
+    <div class="logo-area">
+      <img src="{% static 'plataforma/img/logo.png' %}?v=2.0" alt="SoundWave Logo" class="logo-img">
+    </div>
+
+    <h2 class="form-title">Verificación de Teléfono</h2>
+
+    <div id="step-1" class="step-section">
+      <p class="info-text">Ingresa tu número de teléfono celular para recibir un código de confirmación por SMS.</p>
+      
+      <div class="form-group">
+        <label for="phone">Número de Teléfono</label>
+        <div class="input-row">
+          <select id="country-code" class="phone-prefix">
+            <option value="+593" selected>EC (+593)</option>
+            <option value="+52">MX (+52)</option>
+            <option value="+57">CO (+57)</option>
+            <option value="+34">ES (+34)</option>
+            <option value="+1">US (+1)</option>
+          </select>
+          <input type="tel" id="phone" class="form-input" placeholder="0999999999" required autocomplete="tel">
+        </div>
+      </div>
+
+      <button type="button" id="btn-send-code" class="btn-submit">Enviar código de verificación</button>
+    </div>
+
+    <div id="step-2" class="step-section hidden">
+      <p class="info-text">Se ha enviado un mensaje de texto con un código de verificación de 6 dígitos al número <strong id="display-number"></strong>.</p>
+      
+      <div class="form-group">
+        <label for="verify-code">Código de Verificación</label>
+        <input type="text" id="verify-code" class="form-input" placeholder="123456" maxlength="6" pattern="\d{6}" required autocomplete="one-time-code">
+      </div>
+
+      <button type="button" id="btn-verify" class="btn-submit">Verificar y continuar</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const step1 = document.getElementById('step-1');
+      const step2 = document.getElementById('step-2');
+      const phoneInput = document.getElementById('phone');
+      const prefixSelect = document.getElementById('country-code');
+      const btnSendCode = document.getElementById('btn-send-code');
+      const btnVerify = document.getElementById('btn-verify');
+      const displayNumber = document.getElementById('display-number');
+      const verifyCodeInput = document.getElementById('verify-code');
+
+      btnSendCode.addEventListener('click', function() {
+        const phone = phoneInput.value.trim();
+        if (!phone) {
+          phoneInput.focus();
+          return;
+        }
+
+        btnSendCode.disabled = true;
+        btnSendCode.innerHTML = '<span class="spinner"></span>Enviando...';
+
+        setTimeout(function() {
+          const fullNumber = prefixSelect.value + ' ' + phone;
+          displayNumber.textContent = fullNumber;
+          step1.classList.add('hidden');
+          step2.classList.remove('hidden');
+        }, 1500);
+      });
+
+      btnVerify.addEventListener('click', function() {
+        const code = verifyCodeInput.value.trim();
+        if (code.length !== 6 || isNaN(code)) {
+          verifyCodeInput.focus();
+          return;
+        }
+
+        btnVerify.disabled = true;
+        btnVerify.innerHTML = '<span class="spinner"></span>Validando...';
+
+        setTimeout(function() {
+          window.location.href = '/login/';
+        }, 1000);
+      });
+    });
+  </script>
+</body>
+</html>

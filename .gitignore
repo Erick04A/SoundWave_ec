@@ -30,3 +30,6 @@ Thumbs.db
 
 # Agent brain / IDE state
 brain/
+
+# external configuration credentials
+config.json

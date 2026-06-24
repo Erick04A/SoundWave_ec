@@ -1,0 +1,1086 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión - SoundWave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1A1714;
+      --ink-2: #3D3730;
+      --ink-3: #6B6259;
+      --gold: #C4973A;
+      --gold-2: #D4AA55;
+      --cream: #FAF7F2;
+      --cream-2: #F2EDE4;
+      --cream-3: #E8E0D4;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--ink);
+      color: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .login-container {
+      width: 100%;
+      max-width: 450px;
+      background: #24201C;
+      border: 1px solid var(--ink-2);
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+    .logo-img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      filter: brightness(0) invert(1) sepia(1) saturate(3.5) hue-rotate(10deg) brightness(1.05) drop-shadow(0 0 12px rgba(184, 146, 63, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+      margin-bottom: 0.5rem;
+      transition: filter 0.3s ease;
+    }
+    .logo-img:hover {
+      filter: brightness(0) invert(1) sepia(1) saturate(3.5) hue-rotate(10deg) brightness(1.05) drop-shadow(0 0 18px rgba(184, 146, 63, 0.65)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+    }
+
+    .logo-sub {
+      font-size: 0.75rem;
+      color: var(--ink-3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+    .form-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 1.5rem;
+      align-self: flex-start;
+      border-left: 3px solid var(--gold);
+      padding-left: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    form {
+      width: 100%;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+      width: 100%;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cream-3);
+      margin-bottom: 0.5rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.9rem 1.1rem;
+      background-color: var(--ink);
+      border: 1px solid var(--ink-2);
+      border-radius: 10px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+    .form-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(196,151,58,0.25);
+    }
+    .error-banner {
+      width: 100%;
+      background-color: rgba(234, 67, 53, 0.1);
+      border: 1px solid rgba(234, 67, 53, 0.3);
+      border-left: 4px solid #ea4335;
+      padding: 1rem;
+      border-radius: 8px;
+      color: #ff6b6b;
+      font-size: 0.88rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.95rem;
+      background-color: var(--gold);
+      color: #ffffff;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.25s ease;
+      margin-top: 1rem;
+    }
+    .btn-submit:hover {
+      background-color: var(--gold-2);
+      box-shadow: 0 5px 15px rgba(196,151,58,0.4);
+      transform: translateY(-1px);
+    }
+    .login-footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: var(--ink-3);
+      text-align: center;
+    }
+    .register-link-container {
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: var(--cream-3);
+      text-align: center;
+    }
+    .register-link {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .register-link:hover {
+      color: var(--gold-2);
+      text-decoration: underline;
+    }
+    .btn-back {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 9999;
+      display: inline-block;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 8px 18px;
+      transition: all 0.2s ease;
+    }
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .skeleton-container {
+      position: fixed;
+      bottom: 180px;
+      right: 320px;
+      z-index: 10;
+      width: 120px;
+      height: 200px;
+      pointer-events: none;
+      --sk-primary: #D8D1C0;
+      --sk-secondary: #B8923F;
+      --sk-tertiary: #1A1B1A;
+      --sk-shadow: rgba(190, 24, 93, 0.3);
+      font-size: 0.35vw;
+      overflow: visible;
+    }
+    .skeleton-container *::after, .skeleton-container *::before {
+      content: "";
+    }
+    .skeleton-container .skeleton {
+      width: 12rem;
+      height: 20rem;
+      position: relative;
+    }
+    .skeleton-container .head {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 43%;
+      animation: skeletonJump 0.5s 12.4s ease-in-out forwards;
+    }
+    .skeleton-container .head::before {
+      position: absolute;
+      top: 0.1rem;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 30%;
+      height: 50%;
+      background: var(--sk-primary);
+      z-index: -2;
+    }
+    .skeleton-container .head-hemispheres {
+      position: absolute;
+      width: 100%;
+      height: 85%;
+      overflow: hidden;
+      z-index: -2;
+    }
+    .skeleton-container .head-hemispheres::before, .skeleton-container .head-hemispheres::after {
+      width: 75%;
+      height: 110%;
+      position: absolute;
+      border-radius: 50%;
+      background: var(--sk-primary);
+    }
+    .skeleton-container .head-hemispheres::before {
+      left: 0;
+    }
+    .skeleton-container .head-hemispheres::after {
+      right: 0;
+    }
+    .skeleton-container .eye {
+      position: absolute;
+      width: 2.8rem;
+      height: 2.8rem;
+      background: var(--sk-tertiary);
+      border-radius: 50%;
+      bottom: 30%;
+      z-index: 2;
+    }
+    .skeleton-container .eye-shadow {
+      position: absolute;
+      bottom: calc(30% + 0.3rem);
+      width: 2.8rem;
+      height: 2.8rem;
+      border-radius: 50%;
+      background: var(--sk-secondary);
+      z-index: 1;
+    }
+    .skeleton-container .eye-left, .skeleton-container .eye-shadow-left {
+      left: 20%;
+      animation: faceX1 0.7s 1s forwards, faceX2 0.7s 1.8s ease-out forwards, faceX3 0.7s 2.7s forwards,
+                 faceX1b 0.7s 5s forwards, faceX2b 0.7s 5.8s ease-out forwards, faceX3b 0.7s 6.7s forwards,
+                 faceX1c 0.7s 9s forwards, faceX2c 0.7s 9.8s ease-out forwards, faceX3c 0.7s 10.7s forwards;
+    }
+    .skeleton-container .eye-right, .skeleton-container .eye-shadow-right {
+      right: 20%;
+      animation: faceX1 0.7s 1s forwards, faceX2 0.7s 1.8s forwards, faceX3 0.7s 2.7s ease-out forwards,
+                 faceX1b 0.7s 5s forwards, faceX2b 0.7s 5.8s forwards, faceX3b 0.7s 6.7s ease-out forwards,
+                 faceX1c 0.7s 9s forwards, faceX2c 0.7s 9.8s forwards, faceX3c 0.7s 10.7s ease-out forwards;
+    }
+    .skeleton-container .nose {
+      position: absolute;
+      bottom: 20%;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 1.3rem;
+      height: 0.7rem;
+      background: var(--sk-tertiary);
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
+      z-index: 1;
+      animation: faceX1 0.7s 1s forwards, faceX2 0.7s 1.8s forwards, faceX3 0.7s 2.7s forwards,
+                 faceX1b 0.7s 5s forwards, faceX2b 0.7s 5.8s forwards, faceX3b 0.7s 6.7s forwards,
+                 faceX1c 0.7s 9s forwards, faceX2c 0.7s 9.8s forwards, faceX3c 0.7s 10.7s forwards;
+    }
+    .skeleton-container .nose-shadow {
+      position: absolute;
+      bottom: 20%;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 1.3rem;
+      height: 1.1rem;
+      background: var(--sk-secondary);
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
+      animation: faceX1 0.7s 1s forwards, faceX2 0.7s 1.8s forwards, faceX3 0.7s 2.7s forwards,
+                 faceX1b 0.7s 5s forwards, faceX2b 0.7s 5.8s forwards, faceX3b 0.7s 6.7s forwards,
+                 faceX1c 0.7s 9s forwards, faceX2c 0.7s 9.8s forwards, faceX3c 0.7s 10.7s forwards;
+    }
+    .skeleton-container .mouth {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      background: var(--sk-primary);
+      width: 50%;
+      height: 16%;
+      clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+    }
+    .skeleton-container .teeth {
+      position: absolute;
+      bottom: 0;
+      width: 0.4rem;
+      height: 1rem;
+      background: var(--sk-secondary);
+      border-radius: 3rem 3rem 0 0;
+      animation: faceX1 0.7s 1s forwards, faceX2 0.7s 1.8s forwards, faceX3 0.7s 2.7s forwards,
+                 faceX1b 0.7s 5s forwards, faceX2b 0.7s 5.8s forwards, faceX3b 0.7s 6.7s forwards,
+                 faceX1c 0.7s 9s forwards, faceX2c 0.7s 9.8s forwards, faceX3c 0.7s 10.7s forwards;
+    }
+    .skeleton-container .teeth-left {
+      left: 34%;
+    }
+    .skeleton-container .teeth-right {
+      right: 34%;
+    }
+    .skeleton-container .below-head-container {
+      width: 75%;
+      left: 12.5%;
+      position: absolute;
+      height: 57%;
+      bottom: 0;
+    }
+    .skeleton-container .backbone {
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      top: 0;
+      height: 45%;
+      width: 1rem;
+      background: var(--sk-secondary);
+      animation: skeletonJump 0.5s 12.4s ease-in-out forwards;
+    }
+    .skeleton-container .backbone::before {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% + 3rem);
+      border-radius: 1rem;
+      height: 90%;
+      background: var(--sk-secondary);
+    }
+    .skeleton-container .body {
+      position: absolute;
+      top: calc(0.2 * 45%);
+      height: 100%;
+      width: 100%;
+      z-index: 1;
+    }
+    .skeleton-container .body-inner {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 62%;
+      animation: skeletonJump 0.5s 12.4s ease-in-out forwards;
+    }
+    .skeleton-container .main-bone {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 1rem;
+      height: 95%;
+      background: var(--sk-primary);
+    }
+    .skeleton-container .shoulder {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 2.2rem;
+      border-radius: 2rem;
+      background: var(--sk-primary);
+      clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+    }
+    .skeleton-container .rib-cage {
+      position: absolute;
+      width: 1rem;
+      height: 0.8rem;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+    }
+    .skeleton-container .rib-cage-1 {
+      top: 1.5rem;
+    }
+    .skeleton-container .rib-cage-2 {
+      top: 2.8rem;
+    }
+    .skeleton-container .rib-cage::before {
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      height: 100%;
+      width: 2.7rem;
+      background: var(--sk-primary);
+      transform: skew(0, 10deg);
+    }
+    .skeleton-container .rib-cage::after {
+      position: absolute;
+      top: 50%;
+      right: 100%;
+      height: 100%;
+      width: 2.7rem;
+      background: var(--sk-primary);
+      transform: skew(0, -10deg);
+    }
+    .skeleton-container .kidney-cover {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 5.7rem;
+      height: 5.7rem;
+      border-radius: 50%;
+      opacity: 1;
+      z-index: 1;
+      background: var(--sk-primary);
+      clip-path: polygon(0 80%, 100% 80%, 100% 100%, 0 100%);
+    }
+    .skeleton-container .kidney {
+      position: absolute;
+      bottom: -0.3rem;
+      width: 2.8rem;
+      height: 1.5rem;
+      border-radius: 1rem;
+      background: var(--sk-primary);
+      z-index: 1;
+    }
+    .skeleton-container .kidney-left {
+      right: 50%;
+      transform-origin: right center;
+      transform: rotate(35deg);
+    }
+    .skeleton-container .kidney-right {
+      left: 50%;
+      transform-origin: left center;
+      transform: rotate(-35deg);
+    }
+    .skeleton-container .hand {
+      position: absolute;
+      top: 0;
+      width: 1.5rem;
+      height: calc(100% + 1.5rem);
+    }
+    .skeleton-container .hand-left {
+      left: -1.4rem;
+    }
+    .skeleton-container .hand-right {
+      right: -1.4rem;
+    }
+    .skeleton-container .hand-top {
+      position: absolute;
+      top: 0;
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 50%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--sk-primary);
+    }
+    .skeleton-container .arm, .skeleton-container .forearm {
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 1rem;
+      height: 2.2rem;
+      background: var(--sk-primary);
+    }
+    .skeleton-container .arm {
+      top: 0.5rem;
+      transform-origin: top center;
+      clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+    }
+    .skeleton-container .arm-below-container {
+      position: absolute;
+      top: 2.9rem;
+      height: 100%;
+      width: 100%;
+      transform-origin: top center;
+    }
+    .skeleton-container .hand-left .arm {
+      animation: armRotate1 0.3s 1s forwards, armRotate2 0.3s 1.4s forwards, armRotate3 0.3s 1.8s forwards, armRotate6 0.3s 3.4s forwards, armRotate7 0.3s 3.8s forwards,
+                 armRotate1b 0.3s 5s forwards, armRotate2b 0.3s 5.4s forwards, armRotate3b 0.3s 5.8s forwards, armRotate6b 0.3s 7.4s forwards, armRotate7b 0.3s 7.8s forwards,
+                 armRotate1c 0.3s 9s forwards, armRotate2c 0.3s 9.4s forwards, armRotate3c 0.3s 9.8s forwards, armRotate6c 0.3s 11.4s forwards, armRotate7c 0.3s 11.8s forwards,
+                 leftArmReset 0.3s 12.1s ease-out forwards;
+    }
+    .skeleton-container .hand-right .arm {
+      animation: armRotate4 1.2s 1.8s forwards, armRotate5 0.3s 3s forwards,
+                 armRotate4b 1.2s 5.8s forwards, armRotate5b 0.3s 7s forwards,
+                 armRotate4c 1.2s 9.8s forwards, armRotate5c 0.3s 11s forwards;
+    }
+    .skeleton-container .hand-left .arm-below-container {
+      animation: forearmRotate1 0.3s 1s forwards, forearmRotate2 0.3s 1.4s forwards, forearmRotate3 0.3s 1.8s forwards, forearmRotate6 0.3s 3.4s forwards, forearmRotate7 0.3s 3.8s forwards,
+                 forearmRotate1b 0.3s 5s forwards, forearmRotate2b 0.3s 5.4s forwards, forearmRotate3b 0.3s 5.8s forwards, forearmRotate6b 0.3s 7.4s forwards, forearmRotate7b 0.3s 7.8s forwards,
+                 forearmRotate1c 0.3s 9s forwards, forearmRotate2c 0.3s 9.4s forwards, forearmRotate3c 0.3s 9.8s forwards, forearmRotate6c 0.3s 11.4s forwards, forearmRotate7c 0.3s 11.8s forwards,
+                 leftForearmReset 0.3s 12.1s ease-out forwards;
+    }
+    .skeleton-container .hand-right .arm-below-container {
+      animation: forearmRotate4 1.2s 1.8s forwards, forearmRotate5 0.3s 3s forwards,
+                 forearmRotate4b 1.2s 5.8s forwards, forearmRotate5b 0.3s 7s forwards,
+                 forearmRotate4c 1.2s 9.8s forwards, forearmRotate5c 0.3s 11s forwards;
+    }
+    .skeleton-container .forearm {
+      top: 0;
+      clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+    }
+    .skeleton-container .wrist {
+      position: absolute;
+      top: 2.45rem;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 1rem;
+      height: 0.7rem;
+      background: var(--sk-primary);
+      border-radius: 1rem;
+    }
+    .skeleton-container .finger {
+      position: absolute;
+      top: 3.4rem;
+    }
+    .skeleton-container .hand-right .finger {
+      transform: scaleX(-1);
+      left: auto;
+    }
+    .skeleton-container .finger-pinky {
+      left: 0;
+    }
+    .skeleton-container .finger-ring {
+      left: 0.4rem;
+    }
+    .skeleton-container .finger-index {
+      left: 0.8rem;
+    }
+    .skeleton-container .finger-thumb {
+      left: 1.3rem;
+      top: 3.3rem;
+    }
+    .skeleton-container .hand-right .finger-pinky {
+      right: 0;
+    }
+    .skeleton-container .hand-right .finger-ring {
+      right: 0.4rem;
+    }
+    .skeleton-container .hand-right .finger-thumb {
+      right: 1.3rem;
+    }
+    .skeleton-container .hand-right .finger-index {
+      right: 0.8rem;
+    }
+    .skeleton-container .finger::before {
+      position: absolute;
+      top: 0;
+      width: 0.25rem;
+      border-radius: 2rem;
+      height: 0.5rem;
+      transform: rotate(5deg);
+      background: var(--sk-primary);
+    }
+    .skeleton-container .finger::after {
+      position: absolute;
+      top: 0.3rem;
+      width: 0.25rem;
+      border-radius: 2rem;
+      height: 0.5rem;
+      transform: rotate(-5deg);
+      background: var(--sk-primary);
+    }
+    .skeleton-container .finger-ring::before {
+      transform: rotate(8deg);
+    }
+    .skeleton-container .finger-ring::after {
+      height: 0.6rem;
+      transform: rotate(-8deg);
+    }
+    .skeleton-container .finger-index::before {
+      transform: rotate(5deg);
+    }
+    .skeleton-container .finger-index::after {
+      height: 0.7rem;
+      transform: rotate(-4deg);
+    }
+    .skeleton-container .finger-thumb::before {
+      transform: rotate(-20deg);
+    }
+    .skeleton-container .finger-thumb::after {
+      transform: rotate(20deg);
+    }
+    .skeleton-container .feet-container {
+      position: absolute;
+      bottom: 0;
+      height: 38%;
+      width: 100%;
+    }
+    .skeleton-container .foot {
+      position: absolute;
+      top: -1rem;
+      height: calc(100% + 1rem);
+      width: 1rem;
+      transform-origin: top center;
+    }
+    .skeleton-container .foot-left {
+      left: 30%;
+      animation: feetLeftJump 0.4s 12.4s ease-out forwards;
+    }
+    .skeleton-container .foot-right {
+      right: 30%;
+      animation: feetRightJump 0.4s 12.4s ease-out forwards;
+    }
+    .skeleton-container .thigh {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 45%;
+      background: var(--sk-primary);
+      border-radius: 1px;
+    }
+    .skeleton-container .leg {
+      position: absolute;
+      top: calc(45% + 0.3rem);
+      height: 55%;
+      width: 100%;
+      background: var(--sk-primary);
+    }
+    .skeleton-container .leg::before {
+      position: absolute;
+      top: 100%;
+      transform: translateY(-50%);
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: var(--sk-primary);
+      clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+    }
+    .skeleton-container .leg-right::before {
+      left: 0;
+    }
+    .skeleton-container .leg-left::before {
+      right: 0;
+      animation: legTap 0.5s 2;
+      transform-origin: right center;
+    }
+    .skeleton-container .shadow {
+      position: absolute;
+      top: calc(100% + 0.7rem);
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 100%;
+      height: 1.2rem;
+      z-index: -1;
+    }
+    .skeleton-container .shadow::after, .skeleton-container .shadow::before {
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      background: var(--sk-shadow);
+    }
+    .skeleton-container .shadow::before {
+      right: 50%;
+      border-radius: 1rem 0 0 1rem;
+      animation: shadowWidth1 0.3s 1s forwards, shadowWidth2 0.3s 1.4s forwards, shadowWidth3 0.3s 1.8s forwards, shadowWidth6 0.3s 3.4s forwards, shadowWidth7 0.3s 3.8s forwards,
+                 shadowWidth1b 0.3s 5s forwards, shadowWidth2b 0.3s 5.4s forwards, shadowWidth3b 0.3s 5.8s forwards, shadowWidth6b 0.3s 7.4s forwards, shadowWidth7b 0.3s 7.8s forwards,
+                 shadowWidth1c 0.3s 9s forwards, shadowWidth2c 0.3s 9.4s forwards, shadowWidth3c 0.3s 9.8s forwards, shadowWidth6c 0.3s 11.4s forwards, shadowWidth7c 0.3s 11.8s forwards,
+                 shadowWidth8 0.4s 12.4s forwards;
+    }
+    .skeleton-container .shadow::after {
+      left: 50%;
+      border-radius: 0 1rem 1rem 0;
+      animation: shadowWidth4 1.2s 1.8s forwards, shadowWidth5 0.3s 3s forwards,
+                 shadowWidth4b 1.2s 5.8s forwards, shadowWidth5b 0.3s 7s forwards,
+                 shadowWidth4c 1.2s 9.8s forwards, shadowWidth5c 0.3s 11s forwards,
+                 shadowWidth9 0.4s 12.4s forwards;
+    }
+    @keyframes legTap {
+      0%, 100% {
+        transform: translateY(-50%) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-50%) rotate(10deg);
+      }
+    }
+    @keyframes armRotate1 { to { transform: rotate(90deg); } }
+    @keyframes armRotate2 { from { transform: rotate(90deg); } to { transform: rotate(100deg); } }
+    @keyframes armRotate3 { from { transform: rotate(100deg); } to { transform: rotate(80deg); } }
+    @keyframes armRotate4 {
+      0% { transform: rotate(0); }
+      33% { transform: rotate(-100deg); }
+      66% { transform: rotate(-80deg); }
+      100% { transform: rotate(-100deg); }
+    }
+    @keyframes armRotate5 { from { transform: rotate(-100deg); } to { transform: rotate(0); } }
+    @keyframes armRotate6 { from { transform: rotate(80deg); } to { transform: rotate(100deg); } }
+    @keyframes armRotate7 { from { transform: rotate(100deg); } to { transform: rotate(140deg); } }
+
+    @keyframes forearmRotate1 { to { transform: rotate(90deg) translate(-2.4rem, 2.4rem); } }
+    @keyframes forearmRotate2 { from { transform: rotate(90deg) translate(-2.4rem, 2.4rem); } to { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } }
+    @keyframes forearmRotate3 { from { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } to { transform: rotate(100deg) translate(-1.5rem, 3rem); } }
+    @keyframes forearmRotate4 {
+      0% { transform: rotate(0); }
+      33% { transform: rotate(-80deg) translate(3.2rem, 2.2rem); }
+      66% { transform: rotate(-110deg) translate(1.1rem, 2.8rem); }
+      100% { transform: rotate(-80deg) translate(3.2rem, 2.2rem); }
+    }
+    @keyframes forearmRotate5 { from { transform: rotate(-80deg) translate(3.2rem, 2.2rem); } to { transform: rotate(0) translate(0, 0); } }
+    @keyframes forearmRotate6 { from { transform: rotate(100deg) translate(-1.5rem, 3rem); } to { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } }
+    @keyframes forearmRotate7 {
+      from { transform-origin: top center; transform: rotate(100deg); top: 0.1rem; right: 2.4rem; }
+      to { transform-origin: top center; transform: rotate(500deg); top: -1.4rem; right: 1.5rem; }
+    }
+
+    @keyframes shadowWidth1 { to { width: calc(60% + 4.5rem); } }
+    @keyframes shadowWidth2 { from { width: calc(60% + 4.5rem); } to { width: calc(60% + 3rem); } }
+    @keyframes shadowWidth3 { from { width: calc(60% + 3rem); } to { width: calc(60% + 2rem); } }
+    @keyframes shadowWidth4 {
+      0% { width: 60%; }
+      33% { width: calc(60% + 5rem); }
+      66% { width: calc(60% + 3rem); }
+      100% { width: calc(60% + 5rem); }
+    }
+    @keyframes shadowWidth5 { from { width: calc(60% + 5rem); } to { width: 60%; } }
+    @keyframes shadowWidth6 { from { width: calc(60% + 2rem); } to { width: calc(60% + 3rem); } }
+    @keyframes shadowWidth7 {
+      0% { width: calc(60% + 3rem); }
+      25% { width: calc(60% + 1rem); }
+      50% { width: calc(60% + 2.5rem); }
+      75% { width: calc(60% + 1.5rem); }
+      100% { width: calc(60% + 2.9rem); }
+    }
+
+    /* Duplicated Series b Keyframes */
+    @keyframes armRotate1b { to { transform: rotate(90deg); } }
+    @keyframes armRotate2b { from { transform: rotate(90deg); } to { transform: rotate(100deg); } }
+    @keyframes armRotate3b { from { transform: rotate(100deg); } to { transform: rotate(80deg); } }
+    @keyframes armRotate4b {
+      0% { transform: rotate(0); }
+      33% { transform: rotate(-100deg); }
+      66% { transform: rotate(-80deg); }
+      100% { transform: rotate(-100deg); }
+    }
+    @keyframes armRotate5b { from { transform: rotate(-100deg); } to { transform: rotate(0); } }
+    @keyframes armRotate6b { from { transform: rotate(80deg); } to { transform: rotate(100deg); } }
+    @keyframes armRotate7b { from { transform: rotate(100deg); } to { transform: rotate(140deg); } }
+
+    @keyframes forearmRotate1b {
+      from {
+        top: 2.9rem;
+        right: auto;
+      }
+      to {
+        transform: rotate(90deg) translate(-2.4rem, 2.4rem);
+        top: 2.9rem;
+        right: auto;
+      }
+    }
+    @keyframes forearmRotate2b { from { transform: rotate(90deg) translate(-2.4rem, 2.4rem); } to { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } }
+    @keyframes forearmRotate3b { from { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } to { transform: rotate(100deg) translate(-1.5rem, 3rem); } }
+    @keyframes forearmRotate4b {
+      0% { transform: rotate(0); }
+      33% { transform: rotate(-80deg) translate(3.2rem, 2.2rem); }
+      66% { transform: rotate(-110deg) translate(1.1rem, 2.8rem); }
+      100% { transform: rotate(-80deg) translate(3.2rem, 2.2rem); }
+    }
+    @keyframes forearmRotate5b { from { transform: rotate(-80deg) translate(3.2rem, 2.2rem); } to { transform: rotate(0) translate(0, 0); } }
+    @keyframes forearmRotate6b { from { transform: rotate(100deg) translate(-1.5rem, 3rem); } to { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } }
+    @keyframes forearmRotate7b {
+      from { transform-origin: top center; transform: rotate(100deg); top: 0.1rem; right: 2.4rem; }
+      to { transform-origin: top center; transform: rotate(500deg); top: -1.4rem; right: 1.5rem; }
+    }
+
+    @keyframes faceX1b { to { transform: translateX(-1rem); } }
+    @keyframes faceX2b { from { transform: translateX(-1rem); } to { transform: translateX(1rem); } }
+    @keyframes faceX3b { from { transform: translateX(1rem); } to { transform: translateX(-1rem); } }
+
+    @keyframes shadowWidth1b { to { width: calc(60% + 4.5rem); } }
+    @keyframes shadowWidth2b { from { width: calc(60% + 4.5rem); } to { width: calc(60% + 3rem); } }
+    @keyframes shadowWidth3b { from { width: calc(60% + 3rem); } to { width: calc(60% + 2rem); } }
+    @keyframes shadowWidth4b {
+      0% { width: 60%; }
+      33% { width: calc(60% + 5rem); }
+      66% { width: calc(60% + 3rem); }
+      100% { width: calc(60% + 5rem); }
+    }
+    @keyframes shadowWidth5b { from { width: calc(60% + 5rem); } to { width: 60%; } }
+    @keyframes shadowWidth6b { from { width: calc(60% + 2rem); } to { width: calc(60% + 3rem); } }
+    @keyframes shadowWidth7b {
+      0% { width: calc(60% + 3rem); }
+      25% { width: calc(60% + 1rem); }
+      50% { width: calc(60% + 2.5rem); }
+      75% { width: calc(60% + 1.5rem); }
+      100% { width: calc(60% + 2.9rem); }
+    }
+
+    /* Duplicated Series c Keyframes */
+    @keyframes armRotate1c { to { transform: rotate(90deg); } }
+    @keyframes armRotate2c { from { transform: rotate(90deg); } to { transform: rotate(100deg); } }
+    @keyframes armRotate3c { from { transform: rotate(100deg); } to { transform: rotate(80deg); } }
+    @keyframes armRotate4c {
+      0% { transform: rotate(0); }
+      33% { transform: rotate(-100deg); }
+      66% { transform: rotate(-80deg); }
+      100% { transform: rotate(-100deg); }
+    }
+    @keyframes armRotate5c { from { transform: rotate(-100deg); } to { transform: rotate(0); } }
+    @keyframes armRotate6c { from { transform: rotate(80deg); } to { transform: rotate(100deg); } }
+    @keyframes armRotate7c { from { transform: rotate(100deg); } to { transform: rotate(140deg); } }
+
+    @keyframes forearmRotate1c {
+      from {
+        top: 2.9rem;
+        right: auto;
+      }
+      to {
+        transform: rotate(90deg) translate(-2.4rem, 2.4rem);
+        top: 2.9rem;
+        right: auto;
+      }
+    }
+    @keyframes forearmRotate2c { from { transform: rotate(90deg) translate(-2.4rem, 2.4rem); } to { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } }
+    @keyframes forearmRotate3c { from { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } to { transform: rotate(100deg) translate(-1.5rem, 3rem); } }
+    @keyframes forearmRotate4c {
+      0% { transform: rotate(0); }
+      33% { transform: rotate(-80deg) translate(3.2rem, 2.2rem); }
+      66% { transform: rotate(-110deg) translate(1.1rem, 2.8rem); }
+      100% { transform: rotate(-80deg) translate(3.2rem, 2.2rem); }
+    }
+    @keyframes forearmRotate5c { from { transform: rotate(-80deg) translate(3.2rem, 2.2rem); } to { transform: rotate(0) translate(0, 0); } }
+    @keyframes forearmRotate6c { from { transform: rotate(100deg) translate(-1.5rem, 3rem); } to { transform: rotate(80deg) translate(-3.2rem, 2.2rem); } }
+    @keyframes forearmRotate7c {
+      from { transform-origin: top center; transform: rotate(100deg); top: 0.1rem; right: 2.4rem; }
+      to { transform-origin: top center; transform: rotate(500deg); top: -1.4rem; right: 1.5rem; }
+    }
+
+    @keyframes faceX1c { to { transform: translateX(-1rem); } }
+    @keyframes faceX2c { from { transform: translateX(-1rem); } to { transform: translateX(1rem); } }
+    @keyframes faceX3c { from { transform: translateX(1rem); } to { transform: translateX(-1rem); } }
+
+    @keyframes shadowWidth1c { to { width: calc(60% + 4.5rem); } }
+    @keyframes shadowWidth2c { from { width: calc(60% + 4.5rem); } to { width: calc(60% + 3rem); } }
+    @keyframes shadowWidth3c { from { width: calc(60% + 3rem); } to { width: calc(60% + 2rem); } }
+    @keyframes shadowWidth4c {
+      0% { width: 60%; }
+      33% { width: calc(60% + 5rem); }
+      66% { width: calc(60% + 3rem); }
+      100% { width: calc(60% + 5rem); }
+    }
+    @keyframes shadowWidth5c { from { width: calc(60% + 5rem); } to { width: 60%; } }
+    @keyframes shadowWidth6c { from { width: calc(60% + 2rem); } to { width: calc(60% + 3rem); } }
+    @keyframes shadowWidth7c {
+      0% { width: calc(60% + 3rem); }
+      25% { width: calc(60% + 1rem); }
+      50% { width: calc(60% + 2.5rem); }
+      75% { width: calc(60% + 1.5rem); }
+      100% { width: calc(60% + 2.9rem); }
+    }
+    @keyframes shadowWidth8 {
+      0% {
+        width: calc(60% + 2.9rem);
+      }
+      50% {
+        width: calc(60% - 0.5rem);
+      }
+      100% {
+        width: calc(60% + 2.7rem);
+      }
+    }
+    @keyframes shadowWidth9 {
+      0% {
+        width: 60%;
+      }
+      50% {
+        width: calc(60% - 1rem);
+      }
+      100% {
+        width: calc(60% + 1.5rem);
+      }
+    }
+    @keyframes faceX1 {
+      to {
+        transform: translateX(-1rem);
+      }
+    }
+    @keyframes faceX2 {
+      from {
+        transform: translateX(-1rem);
+      }
+      to {
+        transform: translateX(1rem);
+      }
+    }
+    @keyframes faceX3 {
+      from {
+        transform: translateX(1rem);
+      }
+      to {
+        transform: translateX(-1rem);
+      }
+    }
+    @keyframes skeletonJump {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-6rem);
+      }
+      100% {
+        transform: translateY(4.8rem);
+      }
+    }
+    @keyframes feetLeftJump {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-3rem);
+      }
+      100% {
+        transform: translateY(5rem) rotate(90deg);
+      }
+    }
+    @keyframes feetRightJump {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-3rem);
+      }
+      100% {
+        transform: translateY(5rem) rotate(-90deg);
+      }
+    }
+    @keyframes leftArmReset {
+      to {
+        transform: rotate(0deg);
+      }
+    }
+    @keyframes leftForearmReset {
+      to {
+        transform: rotate(0deg) translate(0, 0);
+        top: 2.9rem;
+        right: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="btn-back">Regresar</a>
+  <div class="login-container">
+    <div class="logo-area">
+      <img src="{% static 'plataforma/img/logo.png' %}?v=2.0" alt="SoundWave Logo" class="logo-img">
+      <span class="logo-sub">Plataforma Musical</span>
+    </div>
+    
+    <h2 class="form-title">Iniciar Sesión</h2>
+    
+    {% if error %}
+    <div class="error-banner">
+      {{ error }}
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="{% url 'login' %}">
+      {% csrf_token %}
+      {% if plan %}
+        <input type="hidden" name="plan" value="{{ plan }}">
+      {% endif %}
+      <div class="form-group">
+        <label for="email">Correo Electrónico</label>
+        <input type="email" id="email" name="email" class="form-input" placeholder="ejemplo@soundwave.ec" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="contrasena">Contraseña</label>
+        <input type="password" id="contrasena" name="contrasena" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      
+      <button type="submit" class="btn-submit">Ingresar a SoundWave</button>
+    </form>
+    
+    <div class="register-link-container">
+      ¿No tienes cuenta? <a href="/registro/" class="register-link">Regístrate</a>
+    </div>
+    
+    <div class="login-footer">
+      <p>&copy; 2026 SoundWave Inc.</p>
+    </div>
+  </div>
+  <div class="skeleton-container">
+    <div class="skeleton">
+      <div class="head">
+        <div class="head-hemispheres"></div>
+        <div class="eye-shadow eye-shadow-left"></div>
+        <div class="eye eye-left"></div>
+        <div class="eye-shadow eye-shadow-right"></div>
+        <div class="eye eye-right"></div>
+        <div class="nose"></div>
+        <div class="nose-shadow"></div>
+        <div class="mouth">
+          <div class="teeth teeth-left"></div>
+          <div class="teeth teeth-right"></div>
+        </div>
+      </div>
+      <div class="below-head-container">
+        <div class="backbone"></div>
+        <div class="body">
+          <div class="body-inner">
+            <div class="main-bone"></div>
+            <div class="shoulder"></div>
+            <div class="rib-cage rib-cage-1"></div>
+            <div class="rib-cage rib-cage-2"></div>
+            <div class="kidney-cover"></div>
+            <div class="kidney kidney-left"></div>
+            <div class="kidney kidney-right"></div>
+            <div class="hand hand-left">
+              <div class="hand-top"></div>
+              <div class="arm"></div>
+              <div class="arm-below-container">
+                <div class="forearm"></div>
+                <div class="wrist"></div>
+                <div class="finger finger-pinky"></div>
+                <div class="finger finger-thumb"></div>
+                <div class="finger finger-ring"></div>
+                <div class="finger finger-index"></div>
+              </div>
+            </div>
+            <div class="hand hand-right">
+              <div class="hand-top"></div>
+              <div class="arm"></div>
+              <div class="arm-below-container">
+                <div class="forearm"></div>
+                <div class="wrist"></div>
+                <div class="finger finger-pinky"></div>
+                <div class="finger finger-thumb"></div>
+                <div class="finger finger-ring"></div>
+                <div class="finger finger-index"></div>
+              </div>
+            </div>
+          </div>
+          <div class="feet-container">
+            <div class="foot foot-left">
+              <div class="thigh"></div>
+              <div class="leg leg-left"></div>
+              <div class="shoe"></div>
+            </div>
+            <div class="foot foot-right">
+              <div class="thigh"></div>
+              <div class="leg leg-right"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="shadow"></div>
+    </div>
+  </div>
+</body>
+</html>

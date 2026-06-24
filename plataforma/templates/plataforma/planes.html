@@ -1,0 +1,771 @@
+{% extends 'plataforma/base_publico.html' %}
+{% load static %}
+
+{% block title %}SoundWave - Planes y Suscripciones{% endblock %}
+
+{% block extra_css %}
+<style>
+  .plans-wrapper {
+    width: 100%;
+    position: relative;
+    overflow: visible;
+    padding-top: 120px;
+  }
+
+  .plans-bg-blobs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .plans-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+  }
+
+  .plans-blob-1 {
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, rgba(190, 24, 93, 0.15) 0%, transparent 70%);
+    top: 5%;
+    left: 5%;
+  }
+
+  .plans-blob-2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(184, 146, 63, 0.12) 0%, transparent 70%);
+    bottom: 25%;
+    right: 5%;
+  }
+
+  .plans-blob-3 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(74, 93, 58, 0.1) 0%, transparent 70%);
+    top: 45%;
+    left: 45%;
+  }
+
+  .plans-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .plans-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    line-height: 1.1;
+  }
+
+  .plans-title .accent {
+    color: var(--crimson);
+    font-style: italic;
+  }
+
+  .plans-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--ink-3);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .plans-grid-top {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    max-width: 992px;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .plans-grid-bottom {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 3.5rem;
+    max-width: 656px;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .plan-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 320px;
+    margin: 0 auto;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .plan-card::after {
+    display: none;
+  }
+
+  .plan-card:hover {
+    transform: translateY(-6px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.45) 100%);
+    box-shadow: 0 16px 40px rgba(26, 23, 20, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .plan-card-free {
+    border-top: 5px solid var(--ink-3);
+  }
+
+  .plan-card-free:hover {
+    border-top-color: var(--ink-3);
+  }
+
+  .plan-card-estudiante {
+    border-top: 5px solid var(--teal);
+  }
+
+  .plan-card-estudiante:hover {
+    border-top-color: var(--teal);
+  }
+
+  .plan-card-premium {
+    background: linear-gradient(135deg, rgba(190, 24, 93, 0.15) 0%, rgba(250, 247, 242, 0.3) 100%);
+    border: 1px solid rgba(190, 24, 93, 0.2);
+    border-top: 5px solid var(--crimson);
+    box-shadow: 0 8px 32px rgba(190, 24, 93, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  .plan-card-premium:hover {
+    background: linear-gradient(135deg, rgba(190, 24, 93, 0.22) 0%, rgba(250, 247, 242, 0.45) 100%);
+    box-shadow: 0 16px 40px rgba(190, 24, 93, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border-color: rgba(190, 24, 93, 0.35);
+    border-top-color: var(--crimson);
+  }
+
+  .plan-card-familiar {
+    border-top: 5px solid var(--olive);
+  }
+
+  .plan-card-familiar:hover {
+    border-top-color: var(--olive);
+  }
+
+  .plan-card-anual {
+    border-top: 5px solid var(--gold);
+  }
+
+  .plan-card-anual:hover {
+    border-top-color: var(--gold);
+  }
+
+  .plan-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-3);
+    margin-bottom: 0.25rem;
+  }
+
+  .plan-label-premium {
+    color: var(--crimson);
+  }
+
+  .plan-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+  }
+
+  .plan-divider {
+    height: 1px;
+    background: rgba(26, 27, 26, 0.1);
+    margin-bottom: 0.75rem;
+  }
+
+  .plan-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .plan-price-amount {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .plan-price-period {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+
+  .plan-note {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    color: var(--ink-3);
+    font-style: italic;
+    margin-top: -0.5rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .plan-features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex-grow: 1;
+  }
+
+  .plan-feature-item {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink-2);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.35;
+  }
+
+  .plan-feature-item.disabled {
+    color: var(--ink-3);
+    opacity: 0.5;
+  }
+
+  .feat-icon {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .feat-icon-ok { color: var(--crimson); }
+  .feat-icon-neutral { color: var(--ink-3); }
+  .feat-icon-no { color: rgba(26, 27, 26, 0.2); }
+
+  .plan-cta {
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .plans-divider {
+    height: 1px;
+    background: var(--cream-3);
+    margin: 0.5rem 0 3.5rem 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .faq-section {
+    margin-bottom: 3.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .faq-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    font-weight: 300;
+    text-align: center;
+    color: var(--ink);
+    margin-bottom: 2rem;
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .faq-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  }
+
+  .faq-card::after { display: none; }
+
+  .faq-card:hover {
+    transform: translateY(-4px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.45) 100%);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  .faq-question {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.6rem;
+  }
+
+  .faq-answer {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  .faq-more-link {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  .faq-more-link a {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--crimson);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  .faq-more-link a:hover {
+    border-bottom-color: var(--crimson);
+  }
+
+  .cta-section {
+    background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 3.5rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    max-width: 1100px;
+    margin: 0 auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    z-index: 1;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,146,63,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-section::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(190,24,93,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 0.75rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink-3);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-btn-wrap {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 968px) {
+    .plans-grid-top {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .plans-grid-bottom {
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .plans-grid-top,
+    .plans-grid-bottom {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="plans-wrapper">
+
+  <div class="plans-bg-blobs">
+    <div class="plans-blob plans-blob-1"></div>
+    <div class="plans-blob plans-blob-2"></div>
+    <div class="plans-blob plans-blob-3"></div>
+  </div>
+
+  <section class="plans-header">
+    <h1 class="plans-title" data-i18n="planes_title">Encuentra tu plan ideal</h1>
+    <p class="plans-subtitle" data-i18n="planes_subtitle">Cambia de plan en cualquier momento según tus necesidades acústicas y disfruta de SoundWave.</p>
+  </section>
+
+  <div class="plans-grid-top">
+
+    <div class="plan-card plan-card-free">
+      <div class="plan-label">Oyente</div>
+      <div class="plan-name" data-i18n="planes_tab_gratuito_title">Plan Gratuito</div>
+      <div class="plan-divider"></div>
+      <div class="plan-price-row">
+        <span class="plan-price-amount">$0</span>
+        <span class="plan-price-period" data-i18n="planes_tab_gratuito_price">/ siempre</span>
+      </div>
+      <ul class="plan-features-list">
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_gratuito_feat1">Acceso completo al catálogo de canciones</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_gratuito_feat2">Reproducción con calidad estándar (128kbps)</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_gratuito_feat3">Soporte técnico mediante centro de ayuda</span>
+        </li>
+        <li class="plan-feature-item disabled">
+          <svg class="feat-icon feat-icon-no" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          <span data-i18n="planes_tab_gratuito_feat4">Anuncios visuales y de audio ocasionales</span>
+        </li>
+      </ul>
+
+      {% if id_usuario %}
+        {% if plan_activo == 'Gratuito' %}
+          <button class="btn btn-ghost plan-cta" disabled data-i18n="planes_active_plan_btn">Tu plan actual</button>
+        {% endif %}
+      {% else %}
+        <a href="/registro/?plan=gratuito" class="btn btn-ghost plan-cta" data-i18n="planes_tab_gratuito_btn">Comenzar Gratis</a>
+      {% endif %}
+    </div>
+
+    <div class="plan-card plan-card-estudiante">
+      <div class="plan-label">Estudiante</div>
+      <div class="plan-name" data-i18n="planes_tab_estudiante_title">Plan Estudiante</div>
+      <div class="plan-divider"></div>
+      <div class="plan-price-row">
+        <span class="plan-price-amount">$4.99</span>
+        <span class="plan-price-period" data-i18n="planes_tab_estudiante_price">/ mes</span>
+      </div>
+      <div class="plan-note" data-i18n="planes_tab_estudiante_discount">50% de descuento</div>
+      <ul class="plan-features-list">
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat1">Audio en Alta Resolución sin pérdidas (24-bit Hi-Res)</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat2">Reproducción 100% sin anuncios ni interrupciones</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat3">Guarda tus canciones favoritas para escuchar sin conexión</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat4">Soporte técnico prioritario y especializado</span>
+        </li>
+      </ul>
+      <div class="plan-note" style="margin-top: -1rem; margin-bottom: 1.25rem;" data-i18n="planes_tab_estudiante_note">Requiere verificación de estatus estudiantil activo</div>
+
+      {% if id_usuario %}
+        {% if plan_activo == 'Estudiante' %}
+          <button class="btn btn-gold plan-cta" disabled data-i18n="planes_active_plan_btn">Tu plan actual</button>
+        {% else %}
+          <a href="{% url 'suscripcion' %}" class="btn btn-gold plan-cta" data-i18n="planes_tab_estudiante_upgrade_btn">Mejorar a Estudiante</a>
+        {% endif %}
+      {% else %}
+        <a href="/verificacion-estudiantil/" class="btn btn-gold plan-cta" data-i18n="planes_tab_estudiante_btn">Adquirir Estudiante</a>
+      {% endif %}
+    </div>
+
+    <div class="plan-card plan-card-premium">
+      <div class="plan-label plan-label-premium">Premium</div>
+      <div class="plan-name" data-i18n="planes_tab_premium_title">Plan Premium</div>
+      <div class="plan-divider" style="background: rgba(190,24,93,0.15);"></div>
+      <div class="plan-price-row">
+        <span class="plan-price-amount" style="color: var(--crimson);">$9.99</span>
+        <span class="plan-price-period" data-i18n="planes_tab_premium_price">/ mes</span>
+      </div>
+      <ul class="plan-features-list">
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat1">Audio en Alta Resolución sin pérdidas (24-bit Hi-Res)</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat2">Reproducción 100% sin anuncios ni interrupciones</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat3">Guarda tus canciones favoritas para escuchar sin conexión</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat4">Soporte técnico prioritario y especializado</span>
+        </li>
+      </ul>
+
+      {% if id_usuario %}
+        {% if plan_activo == 'Premium' %}
+          <button class="btn btn-gold plan-cta" disabled data-i18n="planes_active_plan_btn">Tu plan actual</button>
+        {% else %}
+          <a href="{% url 'suscripcion' %}" class="btn btn-gold plan-cta" data-i18n="planes_tab_premium_upgrade_btn">Mejorar a Premium</a>
+        {% endif %}
+      {% else %}
+        <a href="/registro/?plan=premium" class="btn btn-gold plan-cta" data-i18n="planes_tab_premium_btn">Adquirir Premium</a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <div class="plans-grid-bottom">
+
+    <div class="plan-card plan-card-familiar">
+      <div class="plan-label">Familiar</div>
+      <div class="plan-name" data-i18n="planes_tab_familiar_title">Plan Familiar</div>
+      <div class="plan-divider"></div>
+      <div class="plan-price-row">
+        <span class="plan-price-amount">$14.99</span>
+        <span class="plan-price-period" data-i18n="planes_tab_familiar_price">/ mes</span>
+      </div>
+      <ul class="plan-features-list">
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_familiar_feat1">Hasta 6 perfiles individuales bajo una sola suscripción</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_familiar_feat2">Cada perfil con su propia biblioteca, historial y recomendaciones personalizadas</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat1">Audio en Alta Resolución sin pérdidas (24-bit Hi-Res)</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat2">Reproducción 100% sin anuncios ni interrupciones</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat3">Guarda tus canciones favoritas para escuchar sin conexión</span>
+        </li>
+      </ul>
+
+      {% if id_usuario %}
+        {% if plan_activo == 'Familiar' %}
+          <button class="btn btn-gold plan-cta" disabled data-i18n="planes_active_plan_btn">Tu plan actual</button>
+        {% else %}
+          <a href="{% url 'suscripcion' %}" class="btn btn-gold plan-cta" data-i18n="planes_tab_familiar_upgrade_btn">Mejorar a Familiar</a>
+        {% endif %}
+      {% else %}
+        <a href="/registro/?plan=familiar" class="btn btn-gold plan-cta" data-i18n="planes_tab_familiar_btn">Adquirir Familiar</a>
+      {% endif %}
+    </div>
+
+    <div class="plan-card plan-card-anual">
+      <div class="plan-label">Anual</div>
+      <div class="plan-name" data-i18n="planes_tab_anual_title">Plan Anual</div>
+      <div class="plan-divider"></div>
+      <div class="plan-price-row">
+        <span class="plan-price-amount">$99.99</span>
+        <span class="plan-price-period" data-i18n="planes_tab_anual_price">/ año</span>
+      </div>
+      <div class="plan-note" data-i18n="planes_tab_anual_note">equivalente a $8.33 al mes</div>
+      <ul class="plan-features-list">
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat1">Audio en Alta Resolución sin pérdidas (24-bit Hi-Res)</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat2">Reproducción 100% sin anuncios ni interrupciones</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat3">Guarda tus canciones favoritas para escuchar sin conexión</span>
+        </li>
+        <li class="plan-feature-item">
+          <svg class="feat-icon feat-icon-ok" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+          <span data-i18n="planes_tab_premium_feat4">Soporte técnico prioritario y especializado</span>
+        </li>
+      </ul>
+
+      {% if id_usuario %}
+        {% if plan_activo == 'Anual' %}
+          <button class="btn btn-gold plan-cta" disabled data-i18n="planes_active_plan_btn">Tu plan actual</button>
+        {% else %}
+          <a href="{% url 'suscripcion' %}" class="btn btn-gold plan-cta" data-i18n="planes_tab_anual_upgrade_btn">Mejorar a Anual</a>
+        {% endif %}
+      {% else %}
+        <a href="/registro/?plan=anual" class="btn btn-gold plan-cta" data-i18n="planes_tab_anual_btn">Adquirir Anual</a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <div class="plans-divider"></div>
+
+  <section class="faq-section">
+    <h2 class="faq-section-title" data-i18n="planes_faq_title">Preguntas frecuentes sobre planes</h2>
+    <div class="faq-grid">
+      <div class="faq-card">
+        <h3 class="faq-question" data-i18n="planes_faq_q1">¿Puedo cancelar mi plan en cualquier momento?</h3>
+        <p class="faq-answer" data-i18n="planes_faq_a1">Sí, puedes cancelar tu suscripción Premium en cualquier momento desde tu panel de suscripción. Seguirás teniendo acceso a las ventajas hasta el final del periodo facturado.</p>
+      </div>
+      <div class="faq-card">
+        <h3 class="faq-question" data-i18n="planes_faq_q2">¿Cómo se procesan los pagos?</h3>
+        <p class="faq-answer" data-i18n="planes_faq_a2">Los pagos se procesan de forma simulada a través de nuestra pasarela interna para pruebas, lo que te permite activar o suspender tu cuenta de forma inmediata sin cargos reales.</p>
+      </div>
+    </div>
+    <div class="faq-more-link">
+      <a href="/soporte/" data-i18n="planes_faq_more">¿Tienes más dudas? Visita nuestro Centro de Ayuda</a>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <h2 class="cta-title" data-i18n="planes_cta_title">Comienza hoy mismo con SoundWave</h2>
+    <p class="cta-text" data-i18n="planes_cta_text">Únete a millones de oyentes y disfruta de una calidad sonora insuperable adaptada a tu estilo de vida</p>
+    <div class="cta-btn-wrap">
+      {% if id_usuario %}
+        {% if plan_activo == 'Premium' %}
+          <a href="{% url 'dashboard' %}" class="btn btn-gold" style="padding: 0.9rem 3rem; font-size: 1rem;" data-i18n="planes_cta_btn_dashboard">Ir a mi Dashboard</a>
+        {% else %}
+          <a href="{% url 'suscripcion' %}" class="btn btn-gold" style="padding: 0.9rem 3rem; font-size: 1rem;" data-i18n="planes_cta_btn_start">Comenzar ahora</a>
+        {% endif %}
+      {% else %}
+        <a href="/registro/" class="btn btn-gold" style="padding: 0.9rem 3rem; font-size: 1rem;" data-i18n="planes_cta_btn_start">Comenzar ahora</a>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

@@ -6,71 +6,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="max-age=300, must-revalidate">
   <title>SoundWave</title>
-  
+
   <link rel="prefetch" href="/">
   <link rel="prefetch" href="/catalogo/">
   <link rel="prefetch" href="/historial/">
   <link rel="prefetch" href="/suscripcion/">
-  
-  <!-- Precarga de fuentes asíncrona no bloqueante -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap"></noscript>
-  
-  <!-- Precarga de estilos -->
+
   <link rel="preload" href="{% static 'plataforma/css/estilos_globales.css' %}?v=1.2" as="style">
   <link rel="stylesheet" href="{% static 'plataforma/css/estilos_globales.css' %}?v=1.2">
-  
+
+  <script src="{% static 'plataforma/js/traducciones.js' %}?v=2.1"></script>
+  <script src="{% static 'plataforma/js/i18n.js' %}"></script>
+
   <style>
-    body {
-        opacity: 0;
-        animation: fadeIn 0.15s ease forwards;
-    }
-    @keyframes fadeIn {
-        to { opacity: 1; }
-    }
     @keyframes progress-dummy {
-        0% { width: 10%; }
-        50% { width: 85%; }
-        100% { width: 10%; }
+        0% { transform: scaleX(0.10); }
+        50% { transform: scaleX(0.85); }
+        100% { transform: scaleX(0.10); }
     }
     .player-progress-active {
-        width: 15%;
+        width: 100%;
         height: 100%;
-        background-color: var(--gold, #c9a84c);
+        background: linear-gradient(90deg, var(--crimson, #BE185D), var(--gold, #B8923F));
         border-radius: 2px;
+        transform-origin: left;
+        transform: scaleX(0.15);
         animation: progress-dummy 25s linear infinite;
+    }
+    .lang-select-option-item.active-lang {
+        border-color: var(--gold, #B8923F) !important;
+        color: var(--gold, #B8923F) !important;
+        font-weight: bold;
+        background-color: var(--cream-2, #ebdcc3) !important;
     }
   </style>
 </head>
 <body>
-<div id="progress-bar" style="position:fixed;top:0;left:0;height:3px;width:0%;background:#c9a84c;z-index:9999;transition:width 0.3s ease;"></div>
+<div id="progress-bar" style="position:fixed;top:0;left:0;height:3px;width:0%;background:var(--crimson, #BE185D);z-index:9999;transition:width 0.3s ease;"></div>
 
 <script>
+
+window.createRipple = function(btn, e) {
+    btn.style.position = 'relative';
+    btn.style.overflow = 'hidden';
+
+    const ripple = document.createElement('span');
+    ripple.className = 'btn-ripple';
+
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+
+    let x = rect.width / 2 - size / 2;
+    let y = rect.height / 2 - size / 2;
+
+    if (e && e.clientX) {
+        x = e.clientX - rect.left - size / 2;
+        y = e.clientY - rect.top - size / 2;
+    }
+
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+
+    btn.appendChild(ripple);
+
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
+};
+
 (function() {
-    // Fade out al navegar
-    document.querySelectorAll('nav a').forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            var href = this.getAttribute('href');
-            if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
-                e.preventDefault();
-                document.body.style.transition = 'opacity 0.12s ease';
-                document.body.style.opacity = '0';
-                setTimeout(function() {
-                    window.location.href = href;
-                }, 120);
-            }
-        });
-    });
-    // Fade in al cargar
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.15s ease';
-    window.addEventListener('load', function() {
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.style.transition = 'opacity 0.08s ease';
         document.body.style.opacity = '1';
+
+        document.querySelectorAll('nav a, .nav-item').forEach(function(link) {
+            if (link.dataset.hasTransitionListener) return;
+            link.dataset.hasTransitionListener = 'true';
+
+            link.addEventListener('click', function(e) {
+                var href = this.getAttribute('href');
+                if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
+                    e.preventDefault();
+                    document.body.style.transition = 'opacity 0.08s ease';
+                    document.body.style.opacity = '0';
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 80);
+                }
+            }, { once: true });
+        });
+
+        const track = document.querySelector('.player-track');
+        if (track && track.scrollWidth > track.clientWidth) {
+            track.classList.add('marquee-active');
+        }
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-inline"></span> ' + (btn.getAttribute('data-loading-text') || 'Procesando...');
+                }
+            });
+        });
+
+        const scrollSections = document.querySelectorAll('.stats-grid, .dashboard-main-grid, .dashboard-bottom-grid, .rec-grid, .filter-bar, .card, .admin-card, .subscription-card, .table-custom');
+
+        scrollSections.forEach(section => {
+            section.classList.add('reveal-section');
+        });
+
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+
+            scrollSections.forEach(section => {
+                observer.observe(section);
+            });
+        } else {
+            scrollSections.forEach(section => {
+                section.classList.add('revealed');
+            });
+        }
     });
-})();
-</script>
+})();</script>
 
 <aside class="sidebar">
   <div class="sidebar-logo">
@@ -78,16 +151,66 @@
     <span>Plataforma Musical</span>
   </div>
   <nav class="sidebar-nav">
-    <a href="{% url 'dashboard' %}?id_usuario={{ id_usuario }}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Inicio</a>
-    <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}" class="nav-item {% if request.resolver_match.url_name == 'catalogo' %}active{% endif %}">Catálogo</a>
-    <a href="{% url 'historial' %}?id_usuario={{ id_usuario }}" class="nav-item {% if request.resolver_match.url_name == 'historial' %}active{% endif %}">Historial</a>
-    <a href="{% url 'suscripcion' %}?id_usuario={{ id_usuario }}" class="nav-item {% if request.resolver_match.url_name == 'suscripcion' %}active{% endif %}">Suscripción</a>
-    
+    <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" data-i18n="nav_inicio">Inicio</a>
+    <a href="{% url 'catalogo' %}" class="nav-item {% if request.resolver_match.url_name == 'catalogo' %}active{% endif %}" data-i18n="nav_catalogo">Catálogo</a>
+    <a href="{% url 'historial' %}" class="nav-item {% if request.resolver_match.url_name == 'historial' %}active{% endif %}" data-i18n="nav_historial">Historial</a>
+    <a href="{% url 'suscripcion' %}" class="nav-item {% if request.resolver_match.url_name == 'suscripcion' %}active{% endif %}" data-i18n="nav_suscripcion">Suscripción</a>
+    <a href="{% url 'reportes' %}" class="nav-item {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}" data-i18n="nav_reportes">Reportes</a>
+    <a href="{% url 'soporte' %}" class="nav-item {% if request.resolver_match.url_name == 'soporte' %}active{% endif %}" data-i18n="nav_soporte">Soporte</a>
+    <a href="{% url 'planes' %}" class="nav-item {% if request.resolver_match.url_name == 'planes' %}active{% endif %}" data-i18n="nav_planes">Planes</a>
+
+    {% if active_user_name %}
     <div class="nav-divider" style="border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0 0.5rem 0;"></div>
-    <p class="nav-section-label" style="font-size: 0.7rem; color: var(--ink-3, #6B6259); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.2rem;">ADMINISTRACIÓN</p>
-    <a href="{% url 'administracion' %}?id_usuario={{ id_usuario }}" class="nav-item nav-admin {% if request.resolver_match.url_name == 'administracion' %}active{% endif %}" style="color: #e74c3c !important; font-weight: 600; {% if request.resolver_match.url_name == 'administracion' %}background-color: rgba(231,76,60,0.08); border-radius: 8px; padding-left: 8px;{% endif %}">
-        Panel Admin
-    </a>
+    <div class="sidebar-user-dropdown-container" id="user-dropdown-container">
+      <div class="sidebar-user-block" id="user-block-toggle">
+        <div class="sidebar-user-avatar-container">
+          <img src="{{ active_user_avatar }}" alt="{{ active_user_name }}" class="sidebar-user-avatar" width="36" height="36">
+          {% if active_user_plan == 'Premium' %}<div class="avatar-premium-ring"></div>{% endif %}
+        </div>
+        <div class="sidebar-user-info-col">
+          <span class="sidebar-user-name">{{ active_user_name }}</span>
+          <span class="sidebar-user-plan"><span data-i18n="sidebar_user_plan_label">Plan: </span><span data-i18n="user_plan_{{ active_user_plan|lower }}">{{ active_user_plan }}</span></span>
+        </div>
+        <svg class="sidebar-user-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+      <div class="sidebar-user-dropdown" id="user-profile-dropdown">
+        <div class="dropdown-info-email">{{ active_user_email }}</div>
+        <div class="dropdown-divider"></div>
+        <a href="/ajustes/" class="dropdown-item">
+          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span data-i18n="dropdown_ajustes">Ajustes</span>
+        </a>
+        <div class="dropdown-item" id="lang-menu-btn">
+          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          <span data-i18n="dropdown_idioma">Idioma</span>
+        </div>
+        <a href="{% url 'soporte' %}" class="dropdown-item">
+          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span data-i18n="dropdown_ayuda">Obtener ayuda</span>
+        </a>
+        <a href="{% url 'planes' %}" class="dropdown-item">
+          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+          <span data-i18n="dropdown_planes">Planes</span>
+        </a>
+        <a href="{% url 'suscripcion' %}" class="dropdown-item">
+          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          <span data-i18n="dropdown_suscripcion">Suscripción</span>
+        </a>
+        <a href="/informacion/" class="dropdown-item">
+          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span data-i18n="dropdown_info">Más información</span>
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="{% url 'logout' %}" class="dropdown-item dropdown-item-danger">
+          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span data-i18n="dropdown_cerrar_sesion">Cerrar sesión</span>
+        </a>
+      </div>
+
+    </div>
+    {% endif %}
   </nav>
   <div class="sidebar-player">
     <div class="player-track">{{ cancion_actual|default:"Shape of You" }}</div>
@@ -100,6 +223,185 @@
     {% block content %}{% endblock %}
   </div>
 </main>
+<div id="admin-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: var(--cream); border: 1px solid var(--cream-3); border-radius: 16px; padding: 2rem; max-width: 400px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center;">
+    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--ink);">Verificación de Acceso</h3>
+    <div style="margin-bottom: 1.25rem;">
+      <input type="password" id="admin-password" placeholder="Contraseña de Administrador" style="width: 100%; padding: 0.8rem 1rem; background-color: var(--cream-2); border: 1px solid var(--cream-3); border-radius: 10px; outline: none; font-size: 0.95rem;">
+    </div>
+    <div id="admin-error-msg" style="color: var(--crimson); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+      <button id="admin-confirm-btn" class="btn btn-gold" style="padding: 0.6rem 1.5rem;">Confirmar</button>
+      <button id="admin-cancel-btn" class="btn btn-ghost" style="padding: 0.6rem 1.5rem;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="lang-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10001; align-items: center; justify-content: center;">
+  <div style="background: var(--cream); border: 1px solid var(--cream-3); border-radius: 16px; padding: 2rem; max-width: 350px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center;">
+    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--ink);">Seleccionar Idioma</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+      <button class="btn btn-ghost lang-select-option" style="width: 100%; text-align: center; border-radius: 8px;">Español</button>
+      <button class="btn btn-ghost lang-select-option" style="width: 100%; text-align: center; border-radius: 8px;">Inglés</button>
+      <button class="btn btn-ghost lang-select-option" style="width: 100%; text-align: center; border-radius: 8px;">Francés</button>
+      <button class="btn btn-ghost lang-select-option" style="width: 100%; text-align: center; border-radius: 8px;">Italiano</button>
+    </div>
+    <button id="lang-close-btn" class="btn btn-gold" style="padding: 0.6rem 1.5rem; width: 100%;">Cerrar</button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    let clickCount = 0;
+    let lastClickTime = 0;
+    const logo = document.querySelector('.sidebar-logo');
+    if (logo) {
+      logo.addEventListener('click', function() {
+        const currentTime = new Date().getTime();
+        if (currentTime - lastClickTime > 2000) {
+          clickCount = 1;
+        } else {
+          clickCount++;
+        }
+        lastClickTime = currentTime;
+        if (clickCount === 7) {
+          clickCount = 0;
+          openAdminVerificationModal();
+        }
+      });
+    }
+    function openAdminVerificationModal() {
+      document.getElementById('admin-password').value = '';
+      document.getElementById('admin-error-msg').style.display = 'none';
+      document.getElementById('admin-modal').style.display = 'flex';
+    }
+    const cancelBtn = document.getElementById('admin-cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function() {
+        document.getElementById('admin-modal').style.display = 'none';
+      });
+    }
+    const confirmBtn = document.getElementById('admin-confirm-btn');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', function() {
+        const password = document.getElementById('admin-password').value;
+        const errorMsgDiv = document.getElementById('admin-error-msg');
+        errorMsgDiv.style.display = 'none';
+        fetch('/verificar-admin/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ password: password })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            window.location.href = '/administracion/';
+          } else {
+            errorMsgDiv.textContent = data.error;
+            errorMsgDiv.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          errorMsgDiv.textContent = 'Error de conexion';
+          errorMsgDiv.style.display = 'block';
+        });
+      });
+    }
+
+    const userBlock = document.getElementById('user-block-toggle');
+    const dropdown = document.getElementById('user-profile-dropdown');
+    const dropdownContainer = document.getElementById('user-dropdown-container');
+
+    function positionDropdown() {
+      if (!userBlock || !dropdown) return;
+      const rect = userBlock.getBoundingClientRect();
+      dropdown.style.left = rect.left + 'px';
+      dropdown.style.top = (rect.top - dropdown.offsetHeight - 8) + 'px';
+    }
+
+    function openDropdown() {
+      dropdown.style.display = 'block';
+      positionDropdown();
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          dropdown.classList.add('show');
+        });
+      });
+      if (dropdownContainer) dropdownContainer.classList.add('open');
+    }
+
+    function closeDropdown() {
+      dropdown.classList.remove('show');
+      if (dropdownContainer) dropdownContainer.classList.remove('open');
+      setTimeout(function() {
+        if (!dropdown.classList.contains('show')) {
+          dropdown.style.display = 'none';
+        }
+      }, 200);
+    }
+
+    if (userBlock && dropdown) {
+      dropdown.style.display = 'none';
+
+      userBlock.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (dropdown.classList.contains('show')) {
+          closeDropdown();
+        } else {
+          openDropdown();
+        }
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!userBlock.contains(e.target) && !dropdown.contains(e.target)) {
+          closeDropdown();
+        }
+      });
+
+      dropdown.querySelectorAll('.dropdown-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+          if (!item.id || item.id !== 'lang-menu-btn') {
+            closeDropdown();
+          }
+        });
+      });
+
+      window.addEventListener('resize', function() {
+        if (dropdown.classList.contains('show')) {
+          positionDropdown();
+        }
+      });
+    }
+
+    const langBtn = document.getElementById('lang-menu-btn');
+    const langModal = document.getElementById('lang-modal');
+    const langClose = document.getElementById('lang-close-btn');
+    if (langBtn && langModal && langClose) {
+      langBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (dropdown) dropdown.classList.remove('show');
+        langModal.style.display = 'flex';
+      });
+      langClose.addEventListener('click', function() {
+        langModal.style.display = 'none';
+      });
+      langModal.addEventListener('click', function(e) {
+        if (e.target === langModal) {
+          langModal.style.display = 'none';
+        }
+      });
+      document.querySelectorAll('.lang-select-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+          langModal.style.display = 'none';
+        });
+      });
+    }
+  })();
+</script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

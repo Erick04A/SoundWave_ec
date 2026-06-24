@@ -4,9 +4,9 @@
 {% if messages %}
     <div class="messages-container" style="margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
         {% for message in messages %}
-            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #c9a84c); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #B8923F); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
                 <span>{{ message }}</span>
-                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #c9a84c); padding-left: 1rem;">&times;</span>
+                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #B8923F); padding-left: 1rem;">&times;</span>
             </div>
         {% endfor %}
     </div>
@@ -23,30 +23,30 @@
 
 {% if resultado_transaccion %}
 <div class="subscription-card {% if resultado_transaccion.exito %}transaccion-card-exito{% else %}transaccion-card-fallido{% endif %}" style="margin-bottom: 2rem;">
-    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 0.8rem; font-weight: 600;">Resultado de la Transacción en SoundWaveDB</h3>
+    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 0.8rem; font-weight: 600;" data-i18n="sub_res_title">Resultado de la Transacción en SoundWaveDB</h3>
     <div style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; line-height: 1.6;">
         <p>
-            <strong>Plan de Cuenta:</strong> {{ resultado_transaccion.plan }}<br>
-            <strong>Nueva Fecha de Vencimiento:</strong> {{ resultado_transaccion.fecha_fin }}<br>
-            <strong>Estado Actualizado en BD:</strong> {{ resultado_transaccion.estado }}
+            <strong data-i18n="sub_res_plan">Plan de Cuenta:</strong> {{ resultado_transaccion.plan }}<br>
+            <strong data-i18n="sub_res_date">Nueva Fecha de Vencimiento:</strong> {{ resultado_transaccion.fecha_fin }}<br>
+            <strong data-i18n="sub_res_db_status">Estado Actualizado en BD:</strong> {{ resultado_transaccion.estado }}
         </p>
     </div>
 </div>
 {% endif %}
 
 <div class="subscription-card" style="margin-bottom: 2rem;">
-    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 0.8rem; font-weight: 600;">Estado de Suscripción Actual (Consulta de BD)</h3>
+    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 0.8rem; font-weight: 600;" data-i18n="sub_status_title">Estado de Suscripción Actual (Consulta de BD)</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; text-align: left; font-family: 'DM Sans', sans-serif;">
         <div>
-            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;">Plan Activo</span>
+            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;" data-i18n="suscripcion_active_plan_val">Plan Activo</span>
             <strong style="font-size: 1.1rem; color: #1a1a1a;">{{ sub_actual.plan|default:"Gratuito" }}</strong>
         </div>
         <div>
-            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;">Fecha de Vencimiento</span>
+            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;" data-i18n="suscripcion_end_date">Fecha de Vencimiento</span>
             <strong style="font-size: 1.1rem; color: #1a1a1a;">{{ sub_actual.fecha_fin|default:"Indefinida" }}</strong>
         </div>
         <div>
-            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;">Estado</span>
+            <span style="font-size: 0.85rem; color: var(--ink-3, #777); display: block;" data-i18n="suscripcion_status">Estado</span>
             <div style="margin-top: 0.2rem;">
                 {% if sub_actual.estado == 'Activa' %}
                     <span class="badge-plan badge-premium-table" style="display: inline-block;">{{ sub_actual.estado }}</span>
@@ -59,32 +59,44 @@
 </div>
 
 <div class="subscription-card">
-    <h2>Pasarela de Pagos Interna</h2>
+    <h2 data-i18n="sub_payment_gateway_title">Pasarela de Pagos Interna</h2>
     <div class="info-box-premium">
-        <p>Estás gestionando el ciclo de vida transaccional para la suscripción de la cuenta <strong>Suscripción ID: 1</strong>. La operación invocará de manera atómica las reglas de negocio en el servidor SQL Server.</p>
+        <p data-i18n="sub_payment_gateway_desc">Estás gestionando el ciclo de vida transaccional para la suscripción de la cuenta <strong>Suscripción ID: 1</strong>. La operación invocará de manera atómica las reglas de negocio en el servidor SQL Server.</p>
     </div>
-    <form method="POST" action="{% url 'suscripcion' %}?id_usuario={{ id_usuario }}">
+    <form method="POST" action="{% url 'suscripcion' %}">
         {% csrf_token %}
         <div class="form-group">
-            <label>Método de Pago Corporativo</label>
+            <label data-i18n="sub_label_plan_select">Plan a Suscribir</label>
             <div class="select-custom">
-                <select name="metodo_pago">
-                    <option value="Tarjeta Credito">Tarjeta de Crédito Corporativa</option>
-                    <option value="PayPal">PayPal Business</option>
-                    <option value="Transferencia">Transferencia Bancaria Directa</option>
+                <select name="plan">
+                    <option value="gratuito" {% if plan_seleccionado == 'gratuito' or not plan_seleccionado and sub_actual.plan|lower == 'gratuito' %}selected{% endif %} data-i18n="planes_tab_gratuito_title">Plan Gratuito</option>
+                    <option value="estudiante" {% if plan_seleccionado == 'estudiante' or not plan_seleccionado and sub_actual.plan|lower == 'estudiante' %}selected{% endif %} data-i18n="planes_tab_estudiante_title">Plan Estudiante</option>
+                    <option value="premium" {% if plan_seleccionado == 'premium' or not plan_seleccionado and sub_actual.plan|lower == 'premium' %}selected{% endif %} data-i18n="planes_tab_premium_title">Plan Premium</option>
+                    <option value="familiar" {% if plan_seleccionado == 'familiar' or not plan_seleccionado and sub_actual.plan|lower == 'familiar' %}selected{% endif %} data-i18n="planes_tab_familiar_title">Plan Familiar</option>
+                    <option value="anual" {% if plan_seleccionado == 'anual' or not plan_seleccionado and sub_actual.plan|lower == 'anual' %}selected{% endif %} data-i18n="planes_tab_anual_title">Plan Anual</option>
                 </select>
             </div>
         </div>
         <div class="form-group">
-            <label>Simular Estado de la Transacción</label>
+            <label data-i18n="sub_label_payment_method">Método de Pago Corporativo</label>
             <div class="select-custom">
-                <select name="estado_transaccion">
-                    <option value="Completado">Transacción Exitosa (Aprobar Renovación)</option>
-                    <option value="Fallido">Transacción Declinada (Forzar Vencimiento)</option>
+                <select name="metodo_pago">
+                    <option value="Tarjeta Credito" data-i18n="sub_opt_credit_card">Tarjeta de Crédito Corporativa</option>
+                    <option value="PayPal" data-i18n="sub_opt_paypal">PayPal Business</option>
+                    <option value="Transferencia" data-i18n="sub_opt_bank_transfer">Transferencia Bancaria Directa</option>
                 </select>
             </div>
         </div>
-        <button type="submit" class="btn btn-gold btn-full-width">Procesar Transacción en Base de Datos</button>
+        <div class="form-group">
+            <label data-i18n="sub_label_simulate_status">Simular Estado de la Transacción</label>
+            <div class="select-custom">
+                <select name="estado_transaccion">
+                    <option value="Completado" data-i18n="sub_opt_success">Transacción Exitosa (Aprobar Renovación)</option>
+                    <option value="Fallido" data-i18n="sub_opt_fail">Transacción Declinada (Forzar Vencimiento)</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-full-width" data-i18n="sub_btn_process">Procesar Transacción en Base de Datos</button>
     </form>
 </div>
 {% endblock %}

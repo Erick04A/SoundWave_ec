@@ -1,0 +1,208 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SoundWave - Panel de Administración{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'plataforma/css/estilos_globales.css' %}?v=1.3">
+
+  <script src="{% static 'plataforma/js/traducciones.js' %}?v=2.1"></script>
+  <script src="{% static 'plataforma/js/i18n.js' %}"></script>
+
+  <style>
+    body {
+      background-color: var(--cream) !important;
+      color: var(--ink) !important;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      width: 260px;
+      height: 100vh;
+      background: var(--ink);
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      z-index: 999;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid var(--ink-2);
+    }
+
+    .admin-logo-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .admin-logo-img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      display: block;
+      margin-bottom: 0.5rem;
+      filter: brightness(0) invert(1);
+    }
+
+    .admin-logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--crimson);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin: 0;
+    }
+
+    .admin-mode-label {
+      font-size: 0.7rem;
+      color: var(--ink-3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: block;
+      margin-top: 0.25rem;
+      font-weight: 700;
+    }
+
+    .admin-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex-grow: 1;
+    }
+
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      color: var(--cream-3);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.75rem;
+      border-radius: 6px;
+      transition: background-color 0.25s, color 0.25s;
+    }
+
+    .admin-nav-item:hover, .admin-nav-item.active {
+      background-color: var(--ink-2);
+      color: var(--cream);
+    }
+
+    .admin-main {
+      margin-left: 260px;
+      background: var(--cream);
+      min-height: 100vh;
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-header-bar {
+      height: 70px;
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--cream-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5rem;
+    }
+
+    .admin-header-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .admin-page-content {
+      padding: 2.5rem;
+    }
+
+    .admin-user-profile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .admin-profile-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <aside class="admin-sidebar">
+    <div class="admin-logo-section">
+      <img src="{% static 'plataforma/img/logo.png' %}?v=2.0" alt="SoundWave" class="admin-logo-img" loading="eager">
+      <h1 class="admin-logo-text">SoundWave</h1>
+      <span class="admin-mode-label" data-i18n="admin_sidebar_mode">Modo Administrador</span>
+    </div>
+
+    <nav class="admin-nav">
+      <a href="/administracion/#oyentes" class="admin-nav-item" data-i18n="admin_sidebar_oyentes">Oyentes</a>
+      <a href="/administracion/#artistas" class="admin-nav-item" data-i18n="admin_sidebar_artistas">Artistas</a>
+      <a href="/administracion/#sistema" class="admin-nav-item" data-i18n="admin_sidebar_sistema">Sistema</a>
+      <a href="/reportes/" class="admin-nav-item" data-i18n="admin_sidebar_reportes">Reportes</a>
+    </nav>
+
+    <div style="padding-top: 1rem; border-top: 1px solid var(--ink-2);">
+      <div class="admin-profile-name" style="color: var(--cream-2); margin-bottom: 0.5rem;">{{ request.session.nombre_usuario }}</div>
+      <a href="{% url 'logout' %}" class="btn btn-danger" style="width: 100%; text-align: center; text-transform: uppercase; font-size: 0.75rem; padding: 0.5rem 1rem;" data-i18n="sidebar_btn_cerrar_sesion">Cerrar Sesión</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-header-bar">
+      <h2 class="admin-header-title" data-i18n="admin_header_title">Consola de Control del Sistema</h2>
+      <div class="admin-user-profile">
+        <span class="admin-profile-name" data-i18n="admin_sidebar_user_profile">Admin Activo</span>
+      </div>
+    </header>
+
+    <div class="admin-page-content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const scrollSections = document.querySelectorAll('.card, .table-custom');
+      scrollSections.forEach(section => {
+        section.classList.add('reveal-section');
+      });
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('revealed');
+              obs.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.05 });
+        scrollSections.forEach(section => {
+          observer.observe(section);
+        });
+      } else {
+        scrollSections.forEach(section => {
+          section.classList.add('revealed');
+        });
+      }
+    });
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

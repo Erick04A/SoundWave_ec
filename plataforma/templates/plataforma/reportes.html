@@ -1,0 +1,256 @@
+{% extends 'plataforma/base.html' %}
+{% load humanize %}
+{% block content %}
+
+<div class="card" style="margin-bottom: 2rem; border-color: var(--cream-3); background: #ffffff;">
+    <div class="card-header-premium" style="margin-bottom: 1rem;">
+        <h2 class="card-title" style="font-size: 1.8rem; font-weight: 400; color: #1A1714;" data-i18n="reportes_page_title">Reportes Ejecutivos y de Auditoría</h2>
+        <span class="card-action-btn" data-i18n="reportes_page_sub">Base de Datos SoundWave</span>
+    </div>
+    <p style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink-3); line-height: 1.6; margin-bottom: 1.5rem;" data-i18n="reportes_page_desc">
+        Ejecución directa de Stored Procedures y exportación en formato PDF con diseño institucional. Seleccione uno de los reportes a continuación para configurar sus parámetros y visualizar o descargar sus resultados.
+    </p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
+        <div>
+            <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 1</span>
+            <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep1_title">Top 10 Canciones Más Reproducidas</h3>
+            <p style="font-size: 0.85rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;" data-i18n="rep1_desc">
+                Muestra las 10 canciones con mayor número de reproducciones en la plataforma, detallando el artista, álbum y total de reproducciones.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.8rem; margin-top: auto;">
+            <a href="?report_id=1" class="btn btn-primary" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_view">Ver Reporte</a>
+            <a href="?report_id=1&export=pdf" class="btn btn-ghost" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_pdf">Descargar PDF</a>
+        </div>
+    </div>
+
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
+        <div>
+            <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 2</span>
+            <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep2_title">Artistas Más Populares</h3>
+            <p style="font-size: 0.85rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;" data-i18n="rep2_desc">
+                Ranking de artistas de la plataforma ordenados por el total de reproducciones acumuladas de todas sus canciones publicadas.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.8rem; margin-top: auto;">
+            <a href="?report_id=2" class="btn btn-primary" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_view">Ver Reporte</a>
+            <a href="?report_id=2&export=pdf" class="btn btn-ghost" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_pdf">Descargar PDF</a>
+        </div>
+    </div>
+
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
+        <div>
+            <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 3</span>
+            <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep3_title">Suscripciones Activas</h3>
+            <p style="font-size: 0.85rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;" data-i18n="rep3_desc">
+                Muestra todos los usuarios con suscripciones en estado activa o premium, incluyendo las fechas de inicio, fin y montos pagados.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.8rem; margin-top: auto;">
+            <a href="?report_id=3" class="btn btn-primary" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_view">Ver Reporte</a>
+            <a href="?report_id=3&export=pdf" class="btn btn-ghost" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_pdf">Descargar PDF</a>
+        </div>
+    </div>
+
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
+        <form method="GET" action="" style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
+            <input type="hidden" name="report_id" value="4">
+            <div>
+                <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 4</span>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep4_title">Ingresos y Regalías por Artista</h3>
+                
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep4_select_artist">Seleccionar Artista</label>
+                    <div class="select-custom">
+                        <select name="artista_id" required style="width: 100%; font-size: 0.85rem;">
+                            <option value="" data-i18n="rep4_select_option">-- Seleccione un Artista --</option>
+                            {% for art in artistas_list %}
+                                <option value="{{ art.id }}" {% if param_artista == art.id %}selected{% endif %}>{{ art.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 0.8rem; margin-top: auto;">
+                <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_view">Ver Reporte</button>
+                <button type="submit" name="export" value="pdf" class="btn btn-ghost" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_pdf">Descargar PDF</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
+        <form method="GET" action="" style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
+            <input type="hidden" name="report_id" value="5">
+            <div>
+                <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 5</span>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep5_title">Historial de Reproducción por Usuario</h3>
+                
+                <div class="form-group" style="margin-bottom: 0.8rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep5_select_user">Seleccionar Oyente</label>
+                    <div class="select-custom">
+                        <select name="usuario_id" required style="width: 100%; font-size: 0.85rem;">
+                            <option value="" data-i18n="rep5_select_option">-- Seleccione un Usuario --</option>
+                            {% for usr in usuarios_list %}
+                                <option value="{{ usr.id }}" {% if param_usuario == usr.id %}selected{% endif %}>{{ usr.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 0.8rem;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 1.2rem;">
+                        <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep5_date_from">Desde (Opcional)</label>
+                        <input type="date" name="fecha_inicio" value="{{ param_fecha_inicio|default:'' }}" class="form-input" style="padding: 0.4rem 0.6rem; font-size: 0.8rem;"/>
+                    </div>
+                    <div class="form-group" style="flex: 1; margin-bottom: 1.2rem;">
+                        <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep5_date_to">Hasta (Opcional)</label>
+                        <input type="date" name="fecha_fin" value="{{ param_fecha_fin|default:'' }}" class="form-input" style="padding: 0.4rem 0.6rem; font-size: 0.8rem;"/>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 0.8rem; margin-top: auto;">
+                <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_view">Ver Reporte</button>
+                <button type="submit" name="export" value="pdf" class="btn btn-ghost" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_pdf">Descargar PDF</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
+        <form method="GET" action="" style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
+            <input type="hidden" name="report_id" value="6">
+            <div>
+                <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 6</span>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep6_title">Álbumes Guardados por Usuario</h3>
+                
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep6_select_user">Seleccionar Oyente</label>
+                    <div class="select-custom">
+                        <select name="usuario_id" required style="width: 100%; font-size: 0.85rem;">
+                            <option value="" data-i18n="rep6_select_option">-- Seleccione un Usuario --</option>
+                            {% for usr in usuarios_list %}
+                                <option value="{{ usr.id }}" {% if param_usuario == usr.id %}selected{% endif %}>{{ usr.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 0.8rem; margin-top: auto;">
+                <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_view">Ver Reporte</button>
+                <button type="submit" name="export" value="pdf" class="btn btn-ghost" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0;" data-i18n="rep_btn_pdf">Descargar PDF</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+{% if request.session.rol == 'Administrador' and request.session.modo_desarrollador %}
+<div class="card" style="margin-bottom: 2rem; border-color: var(--cream-3); background: #ffffff; border-top: 3px solid var(--crimson);">
+    <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+        <h2 class="card-title" style="font-size: 1.6rem; font-weight: 400; color: var(--crimson);">Consola de Exportación Administrativa</h2>
+        <span class="card-action-btn" style="background: var(--crimson); color: white;">Exclusivo Admin</span>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--cream-3); background: #faf8f5;">
+            <div>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;">Exportar Base de Datos de Usuarios</h3>
+                <p style="font-size: 0.8rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;">
+                    Genera y descarga un reporte completo de todos los usuarios registrados en el sistema, detallando sus planes, estados de cuenta y fechas de registro.
+                </p>
+            </div>
+            <div style="margin-top: auto;">
+                <a href="?report_id=usuario_completo&export=pdf" class="btn btn-danger" style="display: block; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;">Descargar PDF</a>
+            </div>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--cream-3); background: #faf8f5;">
+            <div>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;">Exportar Catálogo de Música</h3>
+                <p style="font-size: 0.8rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;">
+                    Genera y descarga el inventario completo del catálogo musical, relacionando artistas, álbumes y canciones con sus respectivas estadísticas de reproducción.
+                </p>
+            </div>
+            <div style="margin-top: auto;">
+                <a href="?report_id=catalogo_completo&export=pdf" class="btn btn-danger" style="display: block; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;">Descargar PDF</a>
+            </div>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--cream-3); background: #faf8f5;">
+            <div>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;">Exportar Resumen Financiero</h3>
+                <p style="font-size: 0.8rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;">
+                    Genera y descarga un reporte financiero detallando la cantidad de usuarios suscritos por plan, estado de suscripciones e ingresos totales generados.
+                </p>
+            </div>
+            <div style="margin-top: auto;">
+                <a href="?report_id=resumen_financiero&export=pdf" class="btn btn-danger" style="display: block; text-align: center; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 0;">Descargar PDF</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if report_id %}
+<div class="card" id="seccion-resultados">
+    <div class="card-header-premium" style="border-bottom: 1px solid var(--cream-3); padding-bottom: 0.8rem; margin-bottom: 1.5rem;">
+        <div>
+            <h2 class="card-title" style="font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--gold-2);" data-i18n="rep_results_title">Resultados de Consulta</h2>
+            <span style="font-size: 0.8rem; color: var(--ink-3);">{{ report_title }}</span>
+        </div>
+        <span class="card-action-btn">{{ rows|length }} fila{% if rows|length != 1 %}s{% endif %} devuelta{% if rows|length != 1 %}s{% endif %}</span>
+    </div>
+    
+    {% if error_msg %}
+        <div style="background-color: #fce8e6; border-left: 4px solid #ea4335; padding: 1rem; border-radius: 6px; color: #c5221f; font-family: 'DM Sans', sans-serif; font-size: 0.9rem;">
+            <strong data-i18n="rep_results_error">Error al ejecutar stored procedure:</strong> {{ error_msg }}
+        </div>
+    {% elif rows %}
+        <div style="overflow-x: auto;">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        {% for col in cols %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for val in row %}
+                                <td>
+                                    {% if val == None %}
+                                        <em style="color: var(--ink-3);">null</em>
+                                    {% else %}
+                                        {{ val }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-empty" style="text-align: center; padding: 2rem;" data-i18n="rep_results_empty">No se encontraron registros para los parámetros seleccionados.</p>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const el = document.getElementById("seccion-resultados");
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+</script>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,568 @@
+{% extends 'plataforma/base_publico.html' %}
+{% load static %}
+{% block contenido %}
+<div
+  style="max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 3rem; padding: 120px 0 1rem 0;">
+
+  <div class="card" style="border-color: var(--cream-3); background: #ffffff; padding: 2.5rem;">
+    <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+      <h2 class="card-title"
+        style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 400; color: var(--ink);"
+        data-i18n="info_about_title">Acerca de SoundWave</h2>
+      <span class="card-action-btn" data-i18n="info_about_sub">Nuestra Misión</span>
+    </div>
+    <p style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; line-height: 1.7; color: var(--ink-2);"
+      data-i18n="info_about_desc">
+      SoundWave es una plataforma de streaming de música premium diseñada para conectar a los oyentes con sus artistas
+      favoritos. Fundada en la elegancia de la simplicidad y el diseño de alta calidad, nos dedicamos a ofrecer una
+      experiencia sonora sin compromisos, donde la fidelidad del sonido y el respeto por la creatividad artística
+      convergen.
+    </p>
+  </div>
+
+  <style>
+    @keyframes vinyl-spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .vinyl-disc {
+        animation: none !important;
+      }
+    }
+
+    .vinyl-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4rem 2.5rem;
+      justify-content: center;
+      justify-items: center;
+    }
+
+    @media (max-width: 992px) {
+      .vinyl-grid {
+        grid-template-columns: 1fr;
+        gap: 3.5rem;
+      }
+    }
+
+    .vinyl-card {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 340px;
+      cursor: default;
+    }
+
+    .team-flip-container {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      perspective: 1200px;
+    }
+
+    .team-flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .team-flip-container:hover .team-flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    .team-flip-front,
+    .team-flip-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+    }
+
+    .team-flip-front {
+      z-index: 2;
+      overflow: hidden;
+      background: transparent;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .team-flip-back {
+      z-index: 1;
+      transform: rotateY(180deg);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.55), 0 4px 15px rgba(0, 0, 0, 0.25);
+      background-size: 16px 16px, 20px 20px, 12px 12px, 18px 18px, 100% 100%;
+      background-repeat: repeat, repeat, repeat, repeat, no-repeat;
+    }
+
+    .team-flip-back.martin {
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 75% 15%, rgba(0, 0, 0, 0.2) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.22) 2px, transparent 2px),
+        linear-gradient(135deg, #2b0f36 0%, #110317 100%);
+    }
+
+    .team-flip-back.erick {
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 75% 15%, rgba(0, 0, 0, 0.2) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.22) 2px, transparent 2px),
+        linear-gradient(135deg, #252f1d 0%, #0e201b 100%);
+    }
+
+    .team-flip-back.nicole {
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 75% 15%, rgba(0, 0, 0, 0.2) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.22) 2px, transparent 2px),
+        linear-gradient(135deg, #7c314b 0%, #460f21 100%);
+    }
+
+    .team-back-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: #faf7f2;
+      margin: 0;
+      letter-spacing: 0.5px;
+      border-bottom: 1px dashed rgba(250, 247, 242, 0.25);
+      width: 100%;
+      text-align: center;
+      padding-bottom: 0.5rem;
+    }
+
+    .team-back-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .team-flip-inner {
+        transition: none !important;
+      }
+      .team-flip-container:hover .team-flip-inner {
+        transform: none !important;
+      }
+      .team-flip-back {
+        opacity: 0;
+        transition: opacity 0.15s ease-in-out;
+      }
+      .team-flip-container:hover .team-flip-back {
+        opacity: 1;
+        z-index: 10;
+      }
+      .team-flip-container:hover .team-flip-front {
+        opacity: 0;
+      }
+    }
+
+    .vinyl-cover {
+      width: 65%;
+      height: 100%;
+      border-radius: 12px 0 0 12px;
+      padding: 2.25rem 1.25rem 1.25rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.55), 4px 0 15px rgba(0, 0, 0, 0.25);
+      background-size: 16px 16px, 20px 20px, 12px 12px, 18px 18px, 100% 100%;
+      background-repeat: repeat, repeat, repeat, repeat, no-repeat;
+    }
+
+    .vinyl-cover::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.15) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .vinyl-cover::after {
+      content: "";
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--cream-2);
+      box-shadow: inset 3px 0 5px rgba(0, 0, 0, 0.2);
+      border-left: 1px solid rgba(0, 0, 0, 0.1);
+      z-index: 3;
+    }
+
+    .vinyl-cover.martin {
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 75% 15%, rgba(0, 0, 0, 0.15) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.18) 2px, transparent 2px),
+        linear-gradient(135deg, #441a54 0%, #20072b 100%);
+    }
+
+    .vinyl-cover.erick {
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 75% 15%, rgba(0, 0, 0, 0.15) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.18) 2px, transparent 2px),
+        linear-gradient(135deg, #3f4e32 0%, #1e3a32 100%);
+    }
+
+    .vinyl-cover.nicole {
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 75% 15%, rgba(0, 0, 0, 0.15) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.18) 2px, transparent 2px),
+        linear-gradient(135deg, #af5070 0%, #731b39 100%);
+    }
+
+    .vinyl-ticket {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #f2ede4;
+      border: 1px dashed rgba(26, 27, 26, 0.35);
+      padding: 3px 5px;
+      transform: rotate(-6deg);
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.15);
+      pointer-events: none;
+    }
+
+    .vinyl-ticket span {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 7px;
+      font-weight: 500;
+      color: var(--ink-2);
+      line-height: 1.1;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .vinyl-cover-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 3;
+    }
+
+    .vinyl-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 500;
+      line-height: 1.2;
+      color: #faf7f2;
+      margin: 0;
+    }
+
+    .vinyl-tracklist {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      margin-top: 0.5rem;
+      list-style: none;
+      padding: 0;
+      margin-bottom: 0;
+    }
+
+    .vinyl-track-item {
+      font-family: 'DM Mono', 'Courier New', monospace;
+      font-size: 0.6rem;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.15;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .vinyl-track-item span {
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .vinyl-disc-container {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 200px;
+      height: 200px;
+      left: calc(65% - 100px);
+      z-index: 1;
+    }
+
+    .vinyl-disc {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, #0f0f11 0%, #050506 100%),
+        repeating-radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 6px);
+      background-blend-mode: overlay;
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.05),
+        inset 0 0 0 12px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 13px rgba(255, 255, 255, 0.02),
+        inset 0 0 0 28px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 29px rgba(255, 255, 255, 0.02),
+        inset 0 0 0 45px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 46px rgba(255, 255, 255, 0.02),
+        inset 0 0 12px rgba(0, 0, 0, 0.8),
+        0 4px 16px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: vinyl-spin 8s linear infinite;
+    }
+
+    .vinyl-disc::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg,
+          transparent 38%,
+          rgba(255, 255, 255, 0.05) 43%,
+          rgba(255, 255, 255, 0.12) 50%,
+          rgba(255, 255, 255, 0.05) 57%,
+          transparent 62%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .vinyl-label {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.92);
+      letter-spacing: 0.5px;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+      z-index: 3;
+      user-select: none;
+    }
+
+    .avatar-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 65%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      background-color: var(--cream-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+
+    .avatar-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .vinyl-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+    }
+
+    .vinyl-chip {
+      font-size: 0.72rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: var(--cream-2);
+      border: 1px solid rgba(184, 146, 63, 0.5);
+      color: var(--ink-2);
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.3px;
+    }
+  </style>
+
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    <div class="card-header-premium"
+      style="margin-bottom: 0.5rem; border-bottom: 1px solid var(--cream-3); padding-bottom: 0.75rem;">
+      <h2 class="card-title"
+        style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 400; color: var(--ink);"
+        data-i18n="info_team_title">Equipo de Desarrollo</h2>
+      <span class="card-action-btn" data-i18n="info_team_sub">Creadores</span>
+    </div>
+
+    <div class="vinyl-grid">
+
+      <div class="vinyl-card">
+        <div class="team-flip-container">
+          <div class="team-flip-inner">
+            <div class="team-flip-front">
+              <div class="vinyl-disc-container">
+                <div class="vinyl-disc">
+                  <div class="vinyl-label" style="background: radial-gradient(circle, #5a7348 0%, #3a4d2a 100%);">MG</div>
+                </div>
+              </div>
+              <div class="vinyl-cover martin">
+                <div class="vinyl-ticket">
+                  <span>2026</span>
+                  <span>BASE DE DATOS II</span>
+                </div>
+                <div class="vinyl-cover-content">
+                  <h3 class="vinyl-name">Martin Gaona</h3>
+                </div>
+              </div>
+              <div class="avatar-placeholder" data-avatar-placeholder="true" style="border-color: var(--gold);">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="rgba(26,27,26,0.35)" stroke-width="1.5" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+            </div>
+            <div class="team-flip-back martin">
+              <h4 class="team-back-name">Martin Gaona</h4>
+              <div class="team-back-chips">
+                <span class="vinyl-chip">Desarrollo Frontend</span>
+                <span class="vinyl-chip">Integraci&oacute;n de APIs</span>
+                <span class="vinyl-chip">L&oacute;gica de Negocio</span>
+                <span class="vinyl-chip">Optimizaci&oacute;n de Consultas</span>
+                <span class="vinyl-chip">Despliegue y DevOps</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vinyl-card">
+        <div class="team-flip-container">
+          <div class="team-flip-inner">
+            <div class="team-flip-front">
+              <div class="vinyl-disc-container">
+                <div class="vinyl-disc">
+                  <div class="vinyl-label" style="background: radial-gradient(circle, #d4a84b 0%, #9a6e28 100%);">EQ</div>
+                </div>
+              </div>
+              <div class="vinyl-cover erick">
+                <div class="vinyl-ticket">
+                  <span>2026</span>
+                  <span>BASE DE DATOS II</span>
+                </div>
+                <div class="vinyl-cover-content">
+                  <h3 class="vinyl-name" style="font-size: 1.15rem; line-height: 1.2;">Erick Quinchiguango</h3>
+                </div>
+              </div>
+              <div class="avatar-placeholder" data-avatar-placeholder="true" style="border-color: var(--gold);">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="rgba(26,27,26,0.35)" stroke-width="1.5" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+            </div>
+            <div class="team-flip-back erick">
+              <h4 class="team-back-name">Erick Quinchiguango</h4>
+              <div class="team-back-chips">
+                <span class="vinyl-chip">Arquitectura del Sistema</span>
+                <span class="vinyl-chip">Integraci&oacute;n Backend</span>
+                <span class="vinyl-chip">Base de Datos SQL Server</span>
+                <span class="vinyl-chip">Migraci&oacute;n a MongoDB</span>
+                <span class="vinyl-chip">Control de Versiones</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vinyl-card">
+        <div class="team-flip-container">
+          <div class="team-flip-inner">
+            <div class="team-flip-front">
+              <div class="vinyl-disc-container">
+                <div class="vinyl-disc">
+                  <div class="vinyl-label" style="background: radial-gradient(circle, #d64a8a 0%, #8a1145 100%);">NY</div>
+                </div>
+              </div>
+              <div class="vinyl-cover nicole">
+                <div class="vinyl-ticket">
+                  <span>2026</span>
+                  <span>BASE DE DATOS II</span>
+                </div>
+                <div class="vinyl-cover-content">
+                  <h3 class="vinyl-name">Nicole Yepez</h3>
+                </div>
+              </div>
+              <div class="avatar-placeholder" data-avatar-placeholder="true" style="border-color: var(--crimson);">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="rgba(26,27,26,0.35)" stroke-width="1.5" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+            </div>
+            <div class="team-flip-back nicole">
+              <h4 class="team-back-name">Nicole Yepez</h4>
+              <div class="team-back-chips">
+                <span class="vinyl-chip">Dise&ntilde;o de Experiencia de Usuario</span>
+                <span class="vinyl-chip">Documentaci&oacute;n T&eacute;cnica</span>
+                <span class="vinyl-chip">Pruebas de Calidad</span>
+                <span class="vinyl-chip">Gesti&oacute;n de Requisitos</span>
+                <span class="vinyl-chip">Coordinaci&oacute;n de Sprints</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

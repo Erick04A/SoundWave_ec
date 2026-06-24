@@ -1,0 +1,112 @@
+{% extends 'plataforma/base.html' %}
+{% block content %}
+
+<div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #24201C 0%, #1A1714 100%); border: 1px solid var(--ink-2); color: var(--cream); position: relative; overflow: hidden; padding: 2.5rem;">
+    <div style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap; position: relative; z-index: 2;">
+        <div style="width: 150px; height: 150px; border-radius: 8px; background: var(--ink-2); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 4rem; color: var(--gold); font-family: 'Cormorant Garamond', serif;">
+            &#9835;
+        </div>
+        
+        <div style="flex: 1; min-width: 250px;">
+            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--gold); font-weight: 600; letter-spacing: 2px;">
+                Playlist {% if playlist.es_publica %}<span data-i18n="detail_playlist_public">(Pública)</span>{% else %}<span data-i18n="detail_playlist_private">(Privada)</span>{% endif %}
+            </span>
+            <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; color: var(--gold-2); margin-top: 0.2rem; margin-bottom: 0.8rem; line-height: 1;">{{ playlist.nombre_playlist }}</h1>
+            <p style="font-size: 0.9rem; line-height: 1.6; color: var(--cream-3); max-width: 700px; font-style: italic; margin-bottom: 1.2rem;">"{{ playlist.descripcion|default:"Sin descripción." }}"</p>
+            
+            <div style="display: flex; gap: 2rem; font-size: 0.85rem; color: var(--cream-3); flex-wrap: wrap;">
+                <div><strong data-i18n="detail_playlist_creator">Creador:</strong> <span style="color: var(--gold); font-weight: 600;">{{ playlist.nombre_usuario }}</span></div>
+                <div><strong data-i18n="detail_playlist_total">Total Canciones:</strong> <span style="color: var(--gold); font-weight: 600;">{{ canciones|length }}</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 400; margin-bottom: 1.5rem; color: var(--ink);" data-i18n="detail_playlist_list_title">Canciones en la Playlist</h2>
+
+<div class="card" style="margin-bottom: 2rem;">
+    {% if canciones %}
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th style="width: 60px; text-align: center;" data-i18n="detail_playlist_order">Orden</th>
+                <th style="width: 60px; text-align: center;" data-i18n="detail_playlist_listen">Escuchar</th>
+                <th data-i18n="detail_playlist_title_col">Título</th>
+                <th data-i18n="detail_playlist_artist">Artista</th>
+                <th data-i18n="detail_playlist_album">Álbum</th>
+                <th style="text-align: center; width: 100px;" data-i18n="detail_playlist_duration">Duración</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cancion in canciones %}
+            <tr id="cancion-row-{{ cancion.id_cancion }}">
+                <td style="text-align: center; font-weight: 600; color: var(--gold);">{{ cancion.orden }}</td>
+                <td style="text-align: center;">
+                    <button id="btn-play-{{ cancion.id_cancion }}" class="btn btn-gold btn-play" data-id="{{ cancion.id_cancion }}" onclick="reproducirCancion(this)" style="padding: 0.35rem 0.7rem; font-size: 0.9rem; border-radius: 50%; cursor: pointer; border: none; font-family: sans-serif;">
+                        &#9654;
+                    </button>
+                </td>
+                <td><strong>{{ cancion.titulo_cancion }}</strong></td>
+                <td><a href="{% url 'detalle_artista' id_artista=cancion.id_artista %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);">{{ cancion.nombre_artistico }}</a></td>
+                <td><a href="{% url 'detalle_album' id_album=cancion.id_album %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);"><span style="color: var(--ink-3); font-size: 0.9rem;">{{ cancion.titulo_album }}</span></a></td>
+                <td style="text-align: center; color: var(--gold); font-weight: 500;">{{ cancion.DuracionFormateada }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-empty" style="font-size: 0.9rem;" data-i18n="detail_playlist_empty">Esta playlist se encuentra vacía.</p>
+    {% endif %}
+</div>
+
+<div style="margin-top: 2rem; margin-bottom: 2rem;">
+    <a href="{% url 'dashboard' %}" class="btn btn-ghost" data-i18n="detail_playlist_back">Volver al Inicio</a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function reproducirCancion(btn) {
+    const idCancion = btn.getAttribute('data-id');
+    const original = btn.innerHTML;
+    if (typeof createRipple === 'function') {
+        createRipple(btn, window.event);
+    }
+    btn.innerHTML = '<span class="spinner-inline"></span>';
+    btn.disabled = true;
+
+    fetch('/catalogo/reproducir/' + idCancion + '/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const playerTrack = document.querySelector('.player-track');
+                const playerArtist = document.querySelector('.player-artist');
+                if (playerTrack) playerTrack.innerText = data.titulo;
+                if (playerArtist) playerArtist.innerText = data.artista;
+
+                const sidebarPlayer = document.querySelector('.sidebar-player');
+                if (sidebarPlayer) {
+                    sidebarPlayer.style.transform = 'scale(1.05)';
+                    sidebarPlayer.style.boxShadow = '0 0 15px var(--gold)';
+                    sidebarPlayer.style.transition = 'transform 0.15s ease, box-shadow 0.15s ease';
+                    setTimeout(() => {
+                        sidebarPlayer.style.transform = 'scale(1)';
+                        sidebarPlayer.style.boxShadow = 'none';
+                    }, 250);
+                }
+            } else {
+                alert('Error al reproducir: ' + data.error);
+            }
+        })
+        .catch(err => {
+            console.error('Error AJAX:', err);
+            alert('Error de red o conexion a la base de datos.');
+        })
+        .finally(() => {
+            btn.innerHTML = original;
+            btn.disabled = false;
+        });
+}
+</script>
+{% endblock %}

@@ -16,6 +16,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'plataforma',
 ]
 
@@ -28,6 +33,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'SoundWaveProject.urls'
@@ -42,6 +48,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'plataforma.context_processors.user_profile',
             ],
         },
     },
@@ -51,15 +58,8 @@ WSGI_APPLICATION = 'SoundWaveProject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'SoundWaveDB',
-        'USER': 'sw_app',
-        'PASSWORD': 'SWApp#2026!',
-        'HOST': 'localhost',
-        'PORT': '1433',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -100,3 +100,47 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+import json
+
+def load_oauth_config():
+    config_path = BASE_DIR / 'config.json'
+    if config_path.exists():
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+CONFIG_DATA = load_oauth_config()
+OAUTH_CONFIG = CONFIG_DATA.get('oauth', {})
+GOOGLE_OAUTH_CLIENT_ID = OAUTH_CONFIG.get('GOOGLE_OAUTH_CLIENT_ID', 'PENDIENTE_CONFIGURAR')
+GOOGLE_OAUTH_CLIENT_SECRET = OAUTH_CONFIG.get('GOOGLE_OAUTH_CLIENT_SECRET', 'PENDIENTE_CONFIGURAR')
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': GOOGLE_OAUTH_CLIENT_ID,
+            'secret': GOOGLE_OAUTH_CLIENT_SECRET,
+            'key': ''
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+

@@ -1,0 +1,407 @@
+{% extends 'plataforma/base_publico.html' %}
+{% load static %}
+
+{% block title %}SoundWave - Centro de Ayuda{% endblock %}
+
+{% block extra_css %}
+<style>
+  .support-header-section {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 3rem 1.5rem;
+    background: radial-gradient(circle at top, var(--gold-light) 0%, transparent 70%);
+    border-radius: 24px;
+    border: 1px solid var(--cream-3);
+  }
+
+  .support-title {
+    font-size: 3rem;
+    font-weight: 300;
+    margin-bottom: 0.75rem;
+    color: var(--ink);
+  }
+
+  .support-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.1rem;
+    color: var(--ink-3);
+    margin-bottom: 2rem;
+  }
+
+  .search-wrapper {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 1.1rem 1.5rem 1.1rem 3.5rem;
+    border-radius: 50px;
+    border: 1px solid var(--cream-3);
+    background-color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    outline: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--crimson);
+    box-shadow: 0 4px 24px rgba(190, 24, 93, 0.15);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-3);
+    pointer-events: none;
+    width: 20px;
+    height: 20px;
+  }
+
+  .support-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .category-section {
+    transition: opacity 0.3s ease;
+  }
+
+  .category-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--cream-3);
+    padding-bottom: 0.5rem;
+  }
+
+  .category-icon {
+    color: var(--crimson);
+    font-size: 1.5rem;
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-item {
+    border: 1px solid var(--cream-3);
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .faq-item:hover {
+    border-color: var(--crimson);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(26, 27, 26, 0.03);
+  }
+
+  .faq-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .faq-question {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin: 0;
+    text-align: left;
+    padding-right: 1.5rem;
+  }
+
+  .faq-icon-wrapper {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .faq-icon-wrapper::before, .faq-icon-wrapper::after {
+    content: '';
+    position: absolute;
+    background-color: var(--ink-3);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+
+  .faq-icon-wrapper::before {
+    width: 100%;
+    height: 2px;
+  }
+
+  .faq-icon-wrapper::after {
+    width: 2px;
+    height: 100%;
+  }
+
+  .faq-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .faq-content-inner {
+    overflow: hidden;
+    padding: 0 1.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--ink-3);
+  }
+
+  .faq-item.active {
+    border-left: 4px solid var(--crimson);
+    border-color: var(--cream-3);
+  }
+
+  .faq-item.active .faq-content {
+    grid-template-rows: 1fr;
+  }
+
+  .faq-item.active .faq-content-inner {
+    padding-bottom: 1.25rem;
+  }
+
+  .faq-item.active .faq-icon-wrapper::after {
+    transform: rotate(90deg) scale(0);
+  }
+
+  .faq-item.active .faq-icon-wrapper::before {
+    background-color: var(--crimson);
+  }
+
+  .contact-section {
+    text-align: center;
+    background-color: var(--cream-2);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    margin-top: 5rem;
+    border: 1px solid var(--cream-3);
+  }
+
+  .contact-title {
+    font-size: 1.8rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .contact-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink-3);
+    margin-bottom: 1.5rem;
+  }
+
+  .no-results-msg {
+    display: none;
+    text-align: center;
+    padding: 3rem;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed var(--cream-3);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    color: var(--ink-3);
+  }
+
+  .support-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 120px 0 1rem 0;
+  }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="support-container">
+
+  <section class="support-header-section">
+    <h1 class="support-title" data-i18n="soporte_title">Centro de Ayuda</h1>
+    <p class="support-subtitle" data-i18n="soporte_subtitle">Encuentra respuestas rápidas sobre tu cuenta, planes y reproducción</p>
+
+    <div class="search-wrapper">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+      </svg>
+      <input type="text" id="help-search" class="search-input" placeholder="Busca tu pregunta..." data-i18n-placeholder="soporte_search_placeholder" aria-label="Buscador de preguntas frecuentes">
+    </div>
+  </section>
+
+  <div id="no-results" class="no-results-msg" data-i18n="soporte_no_results">
+    No encontramos ninguna pregunta que coincida con tu búsqueda. Intenta con otras palabras clave.
+  </div>
+
+  <div class="support-grid" id="support-grid">
+
+    <section class="category-section" data-category="cuenta">
+      <h2 class="category-title">
+        <span class="category-icon"></span> <span data-i18n="soporte_cat1_title">Cuenta y Seguridad</span>
+      </h2>
+      <p style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink-3); margin-top: -0.5rem; margin-bottom: 1.5rem;" data-i18n="soporte_cat1_desc">Modificar correo, recuperar contraseña y gestionar sesiones</p>
+      
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-header">
+            <h3 class="faq-question" data-i18n="soporte_q3">¿Cómo recupero mi contraseña de acceso?</h3>
+            <div class="faq-icon-wrapper"></div>
+          </div>
+          <div class="faq-content">
+            <div class="faq-content-inner" data-i18n="soporte_a3">
+              Si no recuerdas tu contraseña, puedes ir a la pantalla de inicio de sesión y hacer click en ¿Olvidaste tu contraseña?, o contactar a soporte si posees inconvenientes adicionales.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="category-section" data-category="planes">
+      <h2 class="category-title">
+        <span class="category-icon"></span> <span data-i18n="soporte_cat2_title">Planes y Pagos</span>
+      </h2>
+      <p style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink-3); margin-top: -0.5rem; margin-bottom: 1.5rem;" data-i18n="soporte_cat2_desc">Métodos de pago, facturación y cambio a Premium</p>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-header">
+            <h3 class="faq-question" data-i18n="soporte_q1">¿Cómo puedo cambiar mi plan de Gratuito a Premium?</h3>
+            <div class="faq-icon-wrapper"></div>
+          </div>
+          <div class="faq-content">
+            <div class="faq-content-inner" data-i18n="soporte_a1">
+              Puedes cambiar tu plan en cualquier momento desde la sección de Suscripción en el menú lateral. Selecciona el plan Premium, ingresa el método de pago y tu cuenta se actualizará de inmediato.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="category-section" data-category="reproduccion">
+      <h2 class="category-title">
+        <span class="category-icon"></span> <span data-i18n="soporte_cat3_title">Reproducción y Calidad</span>
+      </h2>
+      <p style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink-3); margin-top: -0.5rem; margin-bottom: 1.5rem;" data-i18n="soporte_cat3_desc">Configuración de audio Hi-Res, codecs y solución de problemas</p>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-header">
+            <h3 class="faq-question" data-i18n="soporte_q2">¿Qué es el audio de Alta Resolución (Hi-Res)?</h3>
+            <div class="faq-icon-wrapper"></div>
+          </div>
+          <div class="faq-content">
+            <div class="faq-content-inner" data-i18n="soporte_a2">
+              El audio Hi-Res de SoundWave ofrece sonido sin pérdidas a 24 bits, preservando todos los detalles y el rango dinámico de la grabación original de estudio. Requiere una suscripción Premium activa.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <section class="contact-section">
+    <h2 class="contact-title" data-i18n="soporte_contact_title">¿No encontraste lo que buscabas?</h2>
+    <p class="contact-text" data-i18n="soporte_contact_text">Nuestro equipo de atención al cliente está siempre listo para ayudarte con soporte técnico y administrativo personalizado.</p>
+    <a href="mailto:soporte@soundwave.com?subject=Consulta%20SoundWave" class="btn btn-gold" style="padding: 0.85rem 2rem;" data-i18n="soporte_contact_btn">Contáctanos por Correo</a>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    const faqItems = document.querySelectorAll('.faq-item');
+
+    faqItems.forEach(item => {
+      const header = item.querySelector('.faq-header');
+
+      header.addEventListener('click', function() {
+        const isActive = item.classList.contains('active');
+
+        const parentList = item.closest('.faq-list');
+        const activeItemsInGroup = parentList.querySelectorAll('.faq-item.active');
+
+        activeItemsInGroup.forEach(activeItem => {
+          if (activeItem !== item) {
+            activeItem.classList.remove('active');
+          }
+        });
+
+        if (isActive) {
+          item.classList.remove('active');
+        } else {
+          item.classList.add('active');
+        }
+      });
+    });
+
+    const searchInput = document.getElementById('help-search');
+    const categories = document.querySelectorAll('.category-section');
+    const noResults = document.getElementById('no-results');
+
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase().trim();
+      let totalVisible = 0;
+
+      categories.forEach(category => {
+        const items = category.querySelectorAll('.faq-item');
+        let visibleInCategory = 0;
+
+        items.forEach(item => {
+          const question = item.querySelector('.faq-question').textContent.toLowerCase();
+          const answer = item.querySelector('.faq-content-inner').textContent.toLowerCase();
+
+          if (question.includes(query) || answer.includes(query)) {
+            item.style.display = 'block';
+            visibleInCategory++;
+            totalVisible++;
+          } else {
+            item.style.display = 'none';
+
+            item.classList.remove('active');
+          }
+        });
+
+        if (visibleInCategory > 0) {
+          category.style.display = 'block';
+        } else {
+          category.style.display = 'none';
+        }
+      });
+
+      if (totalVisible === 0) {
+        noResults.style.display = 'block';
+      } else {
+        noResults.style.display = 'none';
+      }
+    });
+  });</script>
+{% endblock %}

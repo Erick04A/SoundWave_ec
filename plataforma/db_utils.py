@@ -1,37 +1,34 @@
 import os
 import pyodbc
+import json
 import threading
 from contextlib import contextmanager
 from typing import List, Dict, Any, Union
 from django.conf import settings
 
-import threading
 _thread_local = threading.local()
+
+def load_config():
+    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.json')
+    with open(config_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+CONFIG = load_config()
+DB_CONFIG = CONFIG['database']
 
 def get_connection():
     if not hasattr(_thread_local, 'connection') or _thread_local.connection is None:
-        conn_str_req = (
-            "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=DESKTOP-6GO61O3\\SQLEXPRESS;"
-            "DATABASE=SoundWaveDB;"
-            "Trusted_Connection=yes;"
-            "Connection Timeout=3;"
-        )
-        conn_str_local = (
-            "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=localhost\\SQLEXPRESS;"
-            "DATABASE=SoundWaveDB;"
-            "Trusted_Connection=yes;"
-            "TrustServerCertificate=yes;"
-            "Connection Timeout=3;"
-        )
         try:
-            _thread_local.connection = pyodbc.connect(conn_str_req, timeout=3)
-        except pyodbc.Error:
-            try:
-                _thread_local.connection = pyodbc.connect(conn_str_local, timeout=3)
-            except pyodbc.Error as e:
-                raise Exception(f"No se pudo conectar a SoundWaveDB: {e}")
+            conn_str = (
+                f"DRIVER={{{DB_CONFIG['driver']}}};"
+                f"SERVER={DB_CONFIG['server']};"
+                f"DATABASE={DB_CONFIG['name']};"
+                f"Trusted_Connection={DB_CONFIG['trusted_connection']};"
+                f"Connection Timeout={DB_CONFIG['timeout']};"
+            )
+            _thread_local.connection = pyodbc.connect(conn_str, timeout=DB_CONFIG['timeout'])
+        except pyodbc.Error as e:
+            raise Exception(f"Error de conexion a SoundWaveDB: {e}")
     return _thread_local.connection
 
 def close_connection():
@@ -53,7 +50,7 @@ def get_db_connection():
         print(f"[SoundWave DB Error] Error de conexión pyodbc: {e}")
         raise e
     finally:
-        pass  # Las conexiones se cierran al final de la vista vía close_connection()
+        pass  
 
 
 def execute_stored_procedure(sp_name: str, params: Union[List[Any], None] = None) -> List[Dict[str, Any]]:
@@ -122,46 +119,124 @@ def get_dashboard_fallback(error_msg):
         'recomendaciones': []
     }
 
-USUARIO_PROTEGIDO = 12  # Maria Lopez - nunca eliminar
+USUARIO_PROTEGIDO = CONFIG['app']['usuario_protegido_id']
 
-def eliminar_usuario_bd(id_usuario):
-    if int(id_usuario) == USUARIO_PROTEGIDO:
+def crear_usuario_sp(id_rol, nombre, email, contrasena, estado='Activo', telefono=None, pais=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC negocio.sp_CrearUsuario ?, ?, ?, ?, ?, ?, ?",
+                   id_rol, nombre, email, contrasena, estado, telefono, pais)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def actualizar_usuario_sp(id_usuario, nombre, email, contrasena=None, pais=None, telefono=None, id_rol=None, estado=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC negocio.sp_ActualizarUsuario ?, ?, ?, ?, ?, ?, ?, ?",
+                   id_usuario, nombre, email, contrasena, pais, telefono, id_rol, estado)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def eliminar_usuario_sp(id_usuario):
+    if int(id_usuario) == CONFIG['app']['usuario_protegido_id']:
         raise Exception("No se puede eliminar el usuario principal del sistema.")
     conn = get_connection()
     cursor = conn.cursor()
-    try:
-        # Borrado en cascada manual de todas las dependencias
-        cursor.execute(
-            "DELETE FROM negocio.PLAYLIST_CANCION WHERE id_playlist IN (SELECT id_playlist FROM negocio.PLAYLIST WHERE id_usuario = ?)",
-            [id_usuario]
-        )
-        cursor.execute("DELETE FROM negocio.PLAYLIST WHERE id_usuario = ?", [id_usuario])
-        cursor.execute("DELETE FROM negocio.ALBUM_GUARDADO WHERE id_usuario = ?", [id_usuario])
-        cursor.execute("DELETE FROM negocio.HISTORIAL_REPRODUCCION WHERE id_usuario = ?", [id_usuario])
-        cursor.execute(
-            "DELETE FROM negocio.PAGO WHERE id_suscripcion IN (SELECT id_suscripcion FROM negocio.SUSCRIPCION WHERE id_usuario = ?)",
-            [id_usuario]
-        )
-        cursor.execute("DELETE FROM negocio.SUSCRIPCION WHERE id_usuario = ?", [id_usuario])
-        cursor.execute("DELETE FROM negocio.SEGUIMIENTO_ARTISTA WHERE id_usuario = ?", [id_usuario])
-        cursor.execute("DELETE FROM negocio.LIKES WHERE id_usuario = ?", [id_usuario])
-        cursor.execute("DELETE FROM negocio.NOTIFICACION WHERE id_usuario = ?", [id_usuario])
-        cursor.execute("DELETE FROM catalogo.ARTISTA WHERE id_usuario = ?", [id_usuario])
-        cursor.execute("DELETE FROM negocio.USUARIO WHERE id_usuario = ?", [id_usuario])
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        raise e
-    finally:
-        cursor.close()
-        close_connection()
+    cursor.execute("EXEC negocio.sp_EliminarUsuario ?", id_usuario)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def eliminar_usuario_bd(id_usuario):
+    eliminar_usuario_sp(id_usuario)
+
+def crear_artista_sp(nombre_artistico, email, pais, genero_musical=None, biografia=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_CrearArtista ?, ?, ?, ?, ?",
+                   nombre_artistico, email, pais, genero_musical, biografia)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def actualizar_artista_sp(id_artista, nombre_artistico, pais, genero_musical=None, biografia=None, estado=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_ActualizarArtista ?, ?, ?, ?, ?, ?",
+                   id_artista, nombre_artistico, pais, genero_musical, biografia, estado)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def eliminar_artista_sp(id_artista):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_EliminarArtista ?", id_artista)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def crear_album_sp(id_artista, titulo_album, fecha_lanzamiento=None, descripcion=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_CrearAlbum ?, ?, ?, ?",
+                   id_artista, titulo_album, fecha_lanzamiento, descripcion)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def actualizar_album_sp(id_album, titulo_album, fecha_lanzamiento=None, descripcion=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_ActualizarAlbum ?, ?, ?, ?",
+                   id_album, titulo_album, fecha_lanzamiento, descripcion)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def eliminar_album_sp(id_album):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_EliminarAlbum ?", id_album)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def crear_cancion_sp(id_album, titulo_cancion, duracion_seg, genero_musical=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_CrearCancion ?, ?, ?, ?",
+                   id_album, titulo_cancion, duracion_seg, genero_musical)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def actualizar_cancion_sp(id_cancion, titulo_cancion, duracion_seg, genero_musical=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_ActualizarCancion ?, ?, ?, ?",
+                   id_cancion, titulo_cancion, duracion_seg, genero_musical)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
+def eliminar_cancion_sp(id_cancion):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("EXEC catalogo.sp_EliminarCancion ?", id_cancion)
+    conn.commit()
+    cursor.close()
+    close_connection()
+
 
 def get_dashboard_data(id_usuario):
     try:
         conn = get_connection()
         cursor = conn.cursor()
         
-        # Verificar si el usuario existe antes de consultar
+        
         cursor.execute("SELECT COUNT(*) FROM negocio.USUARIO WHERE id_usuario = ?", [id_usuario])
         exists = cursor.fetchone()[0]
         if not exists:
@@ -170,35 +245,19 @@ def get_dashboard_data(id_usuario):
             
         resultado = {}
         
-        # 1. Obtener estadísticas del usuario y perfil
-        try:
-            # Intentar con negocio.fn_ObtenerPlanActivo
-            cursor.execute("""
-                SELECT 
-                    (SELECT COUNT(*) FROM negocio.HISTORIAL_REPRODUCCION WHERE id_usuario = ?) AS canciones_escuchadas,
-                    (SELECT COUNT(*) FROM negocio.ALBUM_GUARDADO WHERE id_usuario = ?) AS albumes_biblioteca,
-                    CAST(ISNULL((SELECT SUM(duracion_escuchada) FROM negocio.HISTORIAL_REPRODUCCION WHERE id_usuario = ?), 0) / 3600.0 AS DECIMAL(10,1)) AS horas_reproduccion,
-                    u.nombre_usuario,
-                    u.email_usuario,
-                    u.estado,
-                    negocio.fn_ObtenerPlanActivo(?) AS plan_activo
-                FROM negocio.USUARIO u
-                WHERE u.id_usuario = ?
-            """, [id_usuario, id_usuario, id_usuario, id_usuario, id_usuario])
-        except pyodbc.Error:
-            # Fallback al esquema dbo
-            cursor.execute("""
-                SELECT 
-                    (SELECT COUNT(*) FROM negocio.HISTORIAL_REPRODUCCION WHERE id_usuario = ?) AS canciones_escuchadas,
-                    (SELECT COUNT(*) FROM negocio.ALBUM_GUARDADO WHERE id_usuario = ?) AS albumes_biblioteca,
-                    CAST(ISNULL((SELECT SUM(duracion_escuchada) FROM negocio.HISTORIAL_REPRODUCCION WHERE id_usuario = ?), 0) / 3600.0 AS DECIMAL(10,1)) AS horas_reproduccion,
-                    u.nombre_usuario,
-                    u.email_usuario,
-                    u.estado,
-                    dbo.fn_ObtenerPlanActivo(?) AS plan_activo
-                FROM negocio.USUARIO u
-                WHERE u.id_usuario = ?
-            """, [id_usuario, id_usuario, id_usuario, id_usuario, id_usuario])
+        
+        cursor.execute("""
+            SELECT 
+                (SELECT COUNT(*) FROM negocio.HISTORIAL_REPRODUCCION WHERE id_usuario = ?) AS canciones_escuchadas,
+                (SELECT COUNT(*) FROM negocio.ALBUM_GUARDADO WHERE id_usuario = ?) AS albumes_biblioteca,
+                CAST(ISNULL((SELECT SUM(duracion_escuchada) FROM negocio.HISTORIAL_REPRODUCCION WHERE id_usuario = ?), 0) / 3600.0 AS DECIMAL(10,1)) AS horas_reproduccion,
+                u.nombre_usuario,
+                u.email_usuario,
+                u.estado,
+                negocio.fn_ObtenerPlanActivo(?) AS plan_activo
+            FROM negocio.USUARIO u
+            WHERE u.id_usuario = ?
+        """, [id_usuario, id_usuario, id_usuario, id_usuario, id_usuario])
             
         row = cursor.fetchone()
         if row:
@@ -207,7 +266,7 @@ def get_dashboard_data(id_usuario):
         else:
             resultado['stats'] = {}
             
-        # 2. Cargar álbumes guardados (biblioteca personal)
+        
         cursor.execute("""
             SELECT TOP 5 a.titulo_album, ar.nombre_artistico, ag.fecha_guardado
             FROM negocio.ALBUM_GUARDADO ag
@@ -219,7 +278,7 @@ def get_dashboard_data(id_usuario):
         cols = [col[0] for col in cursor.description]
         resultado['albumes'] = [dict(zip(cols, r)) for r in cursor.fetchall()]
         
-        # 3. Historial reciente
+        
         cursor.execute("""
             SELECT TOP 10
                 c.titulo_cancion,
@@ -234,7 +293,7 @@ def get_dashboard_data(id_usuario):
         cols = [col[0] for col in cursor.description]
         resultado['historial_reciente'] = [dict(zip(cols, r)) for r in cursor.fetchall()]
         
-        # 4. Última canción escuchada para el reproductor musical lateral (obtener_cancion_actual)
+        
         cursor.execute("""
             SELECT TOP 1 C.titulo_cancion, A.nombre_artistico
             FROM negocio.HISTORIAL_REPRODUCCION H
@@ -249,36 +308,33 @@ def get_dashboard_data(id_usuario):
         else:
             resultado['cancion_actual'] = {'cancion_actual': 'Shape of You', 'artista_actual': 'Ed Sheeran'}
             
-        # 5. Top canciones globales (sp_ReporteCanciones / query consolidada)
+        
         cursor.execute("""
-            SELECT TOP 10 
-                c.id_cancion, 
-                c.titulo_cancion AS Cancion, 
-                a.nombre_artistico AS Artista, 
-                c.duracion_seg AS Duracion, 
-                c.num_reproducciones AS Reproducciones
+            SELECT TOP 10
+                c.id_cancion,
+                c.titulo_cancion,
+                a.nombre_artistico,
+                c.duracion_seg,
+                c.num_reproducciones
             FROM catalogo.CANCION c
             JOIN catalogo.ARTISTA a ON c.id_artista = a.id_artista
             WHERE c.estado = 'Activo'
             ORDER BY c.num_reproducciones DESC
         """)
-        cols = [col[0] for col in cursor.description]
-        resultado['top_canciones'] = [dict(zip(cols, r)) for r in cursor.fetchall()]
+        cols_raw = ['id_cancion', 'titulo_cancion', 'nombre_artistico', 'duracion_seg', 'num_reproducciones']
+        raw_top = []
+        for r in cursor.fetchall():
+            d = dict(zip(cols_raw, r))
+            d['Cancion'] = d['titulo_cancion']
+            d['Artista'] = d['nombre_artistico']
+            d['Duracion'] = d['duracion_seg']
+            d['Reproducciones'] = d['num_reproducciones']
+            raw_top.append(d)
+            
+        resultado['top_canciones'] = raw_top
+        resultado['top10_global'] = raw_top
         
-        # Guardar en resultado['top10_global'] con las columnas exactas esperadas
-        cursor.execute("""
-            SELECT TOP 10 
-                c.titulo_cancion, 
-                ar.nombre_artistico, 
-                c.num_reproducciones
-            FROM catalogo.CANCION c
-            JOIN catalogo.ARTISTA ar ON c.id_artista = ar.id_artista
-            ORDER BY c.num_reproducciones DESC
-        """)
-        cols_t10 = [col[0] for col in cursor.description]
-        resultado['top10_global'] = [dict(zip(cols_t10, r)) for r in cursor.fetchall()]
         
-        # 6. Recomendaciones del motor personalizadas
         cursor.execute("""
             SELECT DISTINCT CG.id_genero
             FROM negocio.HISTORIAL_REPRODUCCION HR
@@ -396,21 +452,22 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
     cursor = conn.cursor()
     resultado = {}
 
-    # 1. Ranking de artistas populares
+    
     cursor.execute("""
         SELECT
+            ar.id_artista,
             ar.nombre_artistico,
             ISNULL(ar.pais, 'Sin datos') AS pais,
             SUM(c.num_reproducciones) AS total_reproducciones
         FROM catalogo.ARTISTA ar
         JOIN catalogo.CANCION c ON ar.id_artista = c.id_artista
-        GROUP BY ar.nombre_artistico, ar.pais
+        GROUP BY ar.id_artista, ar.nombre_artistico, ar.pais
         ORDER BY total_reproducciones DESC
     """)
     cols = [col[0] for col in cursor.description]
     resultado['artistas'] = [dict(zip(cols, row)) for row in cursor.fetchall()]
 
-    # 2. Lista de artistas únicos para el dropdown de filtro
+    
     cursor.execute("""
         SELECT DISTINCT ar.nombre_artistico
         FROM catalogo.ARTISTA ar
@@ -420,7 +477,7 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
     """)
     resultado['lista_artistas'] = [row[0] for row in cursor.fetchall()]
 
-    # 3. Lista de géneros únicos para el dropdown de filtro
+    
     cursor.execute("SELECT nombre_genero FROM catalogo.GENERO ORDER BY nombre_genero")
     resultado['lista_generos'] = [row[0] for row in cursor.fetchall()]
 
@@ -430,7 +487,9 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
                 C.id_cancion AS id_cancion,
                 C.titulo_cancion AS Cancion,
                 A.nombre_artistico AS Artista,
+                A.id_artista AS id_artista,
                 AL.titulo_album AS Album,
+                AL.id_album AS id_album,
                 C.duracion_seg AS Segundos,
                 C.num_reproducciones AS Reproducciones
             FROM catalogo.CANCION C
@@ -448,8 +507,8 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
             query += " AND G.nombre_genero = ?"
             params.append(filtro_genero)
         query += """
-            GROUP BY C.id_cancion, C.titulo_cancion, A.nombre_artistico,
-                     AL.titulo_album, C.duracion_seg, C.num_reproducciones
+            GROUP BY C.id_cancion, C.titulo_cancion, A.nombre_artistico, A.id_artista,
+                     AL.titulo_album, AL.id_album, C.duracion_seg, C.num_reproducciones
             ORDER BY C.num_reproducciones DESC
         """
         cursor.execute(query, params)
@@ -459,7 +518,9 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
                 C.id_cancion AS id_cancion,
                 C.titulo_cancion AS Cancion,
                 A.nombre_artistico AS Artista,
+                A.id_artista AS id_artista,
                 AL.titulo_album AS Album,
+                AL.id_album AS id_album,
                 C.duracion_seg AS Segundos,
                 C.num_reproducciones AS Reproducciones
             FROM catalogo.CANCION C
@@ -472,7 +533,7 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
     resultado['canciones'] = [dict(zip(cols, r)) for r in cursor.fetchall()]
 
 
-    # 5. Última canción escuchada
+    
     cursor.execute("""
         SELECT TOP 1 C.titulo_cancion, A.nombre_artistico
         FROM negocio.HISTORIAL_REPRODUCCION H
@@ -496,7 +557,7 @@ def get_historial_completo(id_usuario, fecha_inicio, fecha_fin, genero):
     cursor = conn.cursor()
     resultado = {}
     
-    # 1. Historial de reproducción con filtros
+    
     query = """
         SELECT 
             H.fecha_hora AS FechaHora,
@@ -532,11 +593,11 @@ def get_historial_completo(id_usuario, fecha_inicio, fecha_fin, genero):
     cols = [col[0] for col in cursor.description]
     resultado['reporte_datos'] = [dict(zip(cols, r)) for r in cursor.fetchall()]
     
-    # 2. Dropdown de géneros
+    
     cursor.execute("SELECT nombre_genero FROM catalogo.GENERO ORDER BY nombre_genero")
     resultado['lista_generos'] = [row[0] for row in cursor.fetchall()]
     
-    # 3. Última canción escuchada
+    
     cursor.execute("""
         SELECT TOP 1 C.titulo_cancion, A.nombre_artistico
         FROM negocio.HISTORIAL_REPRODUCCION H
@@ -560,7 +621,7 @@ def get_suscripcion_data(id_usuario):
     cursor = conn.cursor()
     resultado = {}
     
-    # 1. Datos de la suscripción activa
+    
     cursor.execute("""
         SELECT TOP 1 id_suscripcion, tipo_plan, fecha_inicio, fecha_fin, estado
         FROM negocio.SUSCRIPCION
@@ -579,7 +640,7 @@ def get_suscripcion_data(id_usuario):
     else:
         resultado['sub_actual'] = {'id_suscripcion': 1, 'tipo_plan': 'Premium', 'estado': 'Activa'}
         
-    # 2. Última canción escuchada
+    
     cursor.execute("""
         SELECT TOP 1 C.titulo_cancion, A.nombre_artistico
         FROM negocio.HISTORIAL_REPRODUCCION H

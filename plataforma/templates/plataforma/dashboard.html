@@ -5,9 +5,9 @@
 {% if messages %}
     <div class="messages-container" style="margin-bottom: 2rem;">
         {% for message in messages %}
-            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #c9a84c); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #B8923F); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
                 <span>{{ message }}</span>
-                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #c9a84c); padding-left: 1rem;">&times;</span>
+                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #B8923F); padding-left: 1rem;">&times;</span>
             </div>
         {% endfor %}
     </div>
@@ -22,60 +22,60 @@
 
 <div class="stats-grid">
     <div class="stat-card">
-        <span class="stat-label">Canciones Escuchadas</span>
+        <span class="stat-label" data-i18n="dashboard_stat_songs">Canciones Escuchadas</span>
         <div class="stat-value">{{ datos.stats.canciones_escuchadas }}</div>
-        <span class="stat-sub">Actividad real en plataforma</span>
+        <span class="stat-sub" data-i18n="dashboard_stat_songs_sub">Actividad real en plataforma</span>
     </div>
     <div class="stat-card">
-        <span class="stat-label">Álbumes en Biblioteca</span>
+        <span class="stat-label" data-i18n="dashboard_stat_albums">Álbumes Guardados</span>
         <div class="stat-value">{{ datos.stats.albumes_biblioteca }}</div>
-        <span class="stat-sub">Sincronizados en tu espacio</span>
+        <span class="stat-sub" data-i18n="dashboard_stat_albums_sub">Sincronizados en tu espacio</span>
     </div>
     <div class="stat-card">
-        <span class="stat-label">Horas de Reproducción</span>
+        <span class="stat-label" data-i18n="dashboard_stat_hours">Horas de Reproducción</span>
         <div class="stat-value">{{ datos.stats.horas_reproduccion }}</div>
-        <span class="stat-sub">Tiempo total en SoundWave</span>
+        <span class="stat-sub" data-i18n="dashboard_stat_hours_sub">Tiempo total en SoundWave</span>
     </div>
 </div>
 
 <div class="dashboard-main-grid">
     <div class="card profile-card">
         <div class="card-header-premium">
-            <h2 class="card-title">Perfil Editorial</h2>
+            <h2 class="card-title" data-i18n="dashboard_profile_title">Perfil Editorial</h2>
             <span class="card-action-btn">ID #{{ id_usuario }}</span>
         </div>
         <div class="profile-detail">
-            <p class="profile-detail-label">Nombre del Oyente</p>
+            <p class="profile-detail-label" data-i18n="dashboard_profile_name">Nombre del Oyente</p>
             <p class="profile-detail-val">{{ datos_usuario.nombre }}</p>
         </div>
         <div class="profile-detail">
-            <p class="profile-detail-label">Nivel de Suscripción</p>
+            <p class="profile-detail-label" data-i18n="dashboard_profile_subscription">Nivel de Suscripción</p>
             <div style="margin-top: 0.25rem;">
                 {% if plan == 'Premium' %}
-                <span class="badge-plan badge-premium-table">Premium Activo</span>
+                <span class="badge-plan badge-premium-table" data-i18n="dashboard_profile_premium_active">Premium Activo</span>
                 {% else %}
-                <span class="badge-plan badge-gratuito-table">Cuenta Gratuita</span>
+                <span class="badge-plan badge-gratuito-table" data-i18n="dashboard_profile_free_account">Cuenta Gratuita</span>
                 {% endif %}
             </div>
         </div>
         <div class="profile-detail">
-            <p class="profile-detail-label">Estado de la Cuenta</p>
+            <p class="profile-detail-label" data-i18n="dashboard_profile_status">Estado de la Cuenta</p>
             <p class="profile-detail-val">{{ datos_usuario.estado }}</p>
         </div>
     </div>
 
     <div class="card">
         <div class="card-header-premium">
-            <h2 class="card-title">Biblioteca Personal</h2>
-            <span class="card-action-btn">Colección de Álbumes</span>
+            <h2 class="card-title" data-i18n="dashboard_library_title">Biblioteca Personal</h2>
+            <span class="card-action-btn" data-i18n="dashboard_library_sub">Colección de Álbumes</span>
         </div>
         {% if albumes %}
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>Álbum</th>
-                    <th>Artista</th>
-                    <th>Fecha de Registro</th>
+                    <th data-i18n="catalogo_col_album">Álbum</th>
+                    <th data-i18n="dashboard_col_artist">Artista</th>
+                    <th data-i18n="dashboard_col_reg_date">Fecha de Registro</th>
                 </tr>
             </thead>
             <tbody>
@@ -89,15 +89,15 @@
             </tbody>
         </table>
         {% else %}
-        <p class="text-empty">Tu biblioteca personal se encuentra vacía.</p>
+        <p class="text-empty" data-i18n="dashboard_empty_library">Tu biblioteca personal se encuentra vacía.</p>
         {% endif %}
     </div>
 </div>
 
 <div class="card" style="margin-bottom: 2.5rem;">
     <div class="card-header-premium">
-        <h2 class="card-title">Recomendaciones del Motor</h2>
-        <span class="card-action-btn">Descubrimientos para Ti</span>
+        <h2 class="card-title" data-i18n="dashboard_title_recs">Recomendaciones del Motor</h2>
+        <span class="card-action-btn" data-i18n="dashboard_recs_sub">Descubrimientos para Ti</span>
     </div>
     {% if recomendaciones %}
     <div class="rec-grid">
@@ -105,28 +105,28 @@
         <div class="rec-card">
             <p class="rec-title">{{ rec.Cancion }}</p>
             <p class="rec-artist">{{ rec.Artista }}</p>
-            <span class="rec-tag">{{ rec.Genero }}</span>
+            <span class="rec-tag" data-i18n="dashboard_col_genre">{{ rec.Genero }}</span>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <p class="text-empty">No hemos encontrado recomendaciones basadas en tu historial.</p>
+    <p class="text-empty" data-i18n="dashboard_empty_recs">No hemos encontrado recomendaciones basadas en tu historial.</p>
     {% endif %}
 </div>
 
 <div class="dashboard-bottom-grid">
     <div class="card">
         <div class="card-header-premium">
-            <h2 class="card-title">Historial Reciente</h2>
-            <span class="card-action-btn">Últimas Reproducciones</span>
+            <h2 class="card-title" data-i18n="dashboard_title_recientes">Historial Reciente</h2>
+            <span class="card-action-btn" data-i18n="dashboard_recent_sub">Últimas Reproducciones</span>
         </div>
         {% if datos.historial_reciente %}
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>Canción</th>
-                    <th>Artista</th>
-                    <th>Fecha y Hora</th>
+                    <th data-i18n="dashboard_col_song">Canción</th>
+                    <th data-i18n="dashboard_col_artist">Artista</th>
+                    <th data-i18n="dashboard_col_date">Fecha y Hora</th>
                 </tr>
             </thead>
             <tbody>
@@ -140,23 +140,23 @@
             </tbody>
         </table>
         {% else %}
-        <p class="text-empty">No se registran canciones escuchadas recientemente.</p>
+        <p class="text-empty" data-i18n="dashboard_empty_history">No se registran canciones escuchadas recientemente.</p>
         {% endif %}
     </div>
 
     <div class="card">
         <div class="card-header-premium">
-            <h2 class="card-title">Top 10 Global</h2>
-            <span class="card-action-btn">Las más escuchadas</span>
+            <h2 class="card-title" data-i18n="dashboard_title_top">Top 10 Global</h2>
+            <span class="card-action-btn" data-i18n="dashboard_top_sub">Las más escuchadas</span>
         </div>
         {% if datos.top10_global %}
         <table class="table-custom">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Canción</th>
-                    <th>Artista</th>
-                    <th>Reproducciones</th>
+                    <th data-i18n="dashboard_col_song">Canción</th>
+                    <th data-i18n="dashboard_col_artist">Artista</th>
+                    <th data-i18n="dashboard_col_reps">Reproducciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -173,7 +173,7 @@
             </tbody>
         </table>
         {% else %}
-        <p class="text-empty">No se registran datos acumulados de reproducción.</p>
+        <p class="text-empty" data-i18n="dashboard_empty_top">No se registran datos acumulados de reproducción.</p>
         {% endif %}
     </div>
 </div>

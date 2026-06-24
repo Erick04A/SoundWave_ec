@@ -1,238 +1,241 @@
-{% extends 'plataforma/base.html' %}
+{% extends 'plataforma/base_admin.html' %}
 {% load humanize %}
 {% block content %}
 
 {% if messages %}
     <div class="messages-container" style="margin-bottom: 2rem;">
         {% for message in messages %}
-            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #c9a84c); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+            <div style="background-color: #f5f0e8; border-left: 4px solid var(--gold, #B8923F); padding: 1.2rem; border-radius: 8px; color: #1a1a1a; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
                 <span>{{ message }}</span>
-                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #c9a84c); padding-left: 1rem;">&times;</span>
+                <span onclick="this.parentElement.style.display='none';" style="cursor: pointer; font-weight: bold; color: var(--gold, #B8923F); padding-left: 1rem;">&times;</span>
             </div>
         {% endfor %}
     </div>
 {% endif %}
 
-<!-- Premium Navigation Header -->
 <div class="card" style="margin-bottom: 2rem; border-color: var(--cream-3); background: #ffffff;">
     <div class="card-header-premium" style="margin-bottom: 1.5rem;">
-        <h2 class="card-title" style="font-size: 1.8rem; font-weight: 400; color: #1A1714;">Panel de Administración</h2>
-        <span class="card-action-btn">Consola de Control</span>
+        <h2 class="card-title" style="font-size: 1.8rem; font-weight: 400; color: #1A1714;" data-i18n="admin_title">Panel de Administración</h2>
+        <span class="card-action-btn" data-i18n="admin_subtitle">Consola de Control</span>
     </div>
-    
-    <!-- Tab Navigation using global tabs style -->
+
     <div class="tabs-container" style="margin-bottom: 0;">
         <button class="tab-btn tab-active" onclick="switchTab(event, 'oyentes')">
-            Oyentes ({{ oyentes|length }})
+            <span data-i18n="admin_sidebar_oyentes">Oyentes</span> ({{ oyentes|length }})
         </button>
         <button class="tab-btn" onclick="switchTab(event, 'artistas')">
-            Artistas ({{ artistas|length }})
+            <span data-i18n="admin_sidebar_artistas">Artistas</span> ({{ artistas|length }})
+        </button>
+        <button class="tab-btn" onclick="switchTab(event, 'catalogo')">
+            <span>Catálogo</span> ({{ albumes|length }} / {{ canciones|length }})
         </button>
         <button class="tab-btn" onclick="switchTab(event, 'sistema')">
-            Sistema
+            <span data-i18n="admin_sidebar_sistema">Sistema</span>
         </button>
     </div>
 </div>
 
-<!-- TAB: OYENTES -->
 <div id="tab-oyentes" class="tab-content">
     <div class="card">
         <div class="card-header-premium" style="margin-bottom: 1.5rem;">
-            <h2 class="card-title">Oyentes Registrados</h2>
-            <span class="card-action-btn">Gestión de Usuarios</span>
+            <h2 class="card-title" data-i18n="admin_oyentes_title">Oyentes Registrados</h2>
+            <span class="card-action-btn" data-i18n="admin_oyentes_subtitle">Gestión de Usuarios</span>
         </div>
-        
-        <!-- Premium Filter and Search bar -->
+
         <div class="filter-bar" style="margin-bottom: 2rem;">
             <div class="filter-group" style="flex: 2;">
-                <label>Buscar Oyente</label>
-                <input type="text" id="buscar-oyente" 
-                       placeholder="Buscar por nombre o ID..." 
-                       oninput="filtrarTabla('tabla-oyentes', this.value)"
-                       class="filter-input"/>
+                <label data-i18n="admin_oyentes_search_label">Buscar Oyente</label>
+                <input type="text" id="filtro-nombre-oyente" placeholder="Nombre o correo..." data-i18n-placeholder="admin_oyentes_filter_all" class="filter-input" onkeyup="filtrarOyentes()">
             </div>
             <div class="filter-group">
-                <label>Estado de Cuenta</label>
+                <label data-i18n="admin_oyentes_filter_status">Estado</label>
                 <div class="filter-select-custom">
-                    <select id="filtro-estado-oyente" onchange="filtrarPorEstado('tabla-oyentes', this.value)">
-                        <option value="">Todos los estados</option>
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                        <option value="Suspendido">Suspendido</option>
+                    <select id="filtro-estado-oyente" onchange="filtrarOyentes()">
+                        <option value="" data-i18n="admin_oyentes_filter_all">Todos</option>
+                        <option value="Activo" data-i18n="admin_oyentes_filter_active">Activo</option>
+                        <option value="Inactivo" data-i18n="admin_oyentes_filter_inactive">Inactivo</option>
                     </select>
                 </div>
             </div>
             <div class="filter-group">
-                <label>Nivel de Plan</label>
+                <label data-i18n="admin_oyentes_filter_plan">Plan</label>
                 <div class="filter-select-custom">
-                    <select id="filtro-plan" onchange="filtrarPorPlan('tabla-oyentes', this.value)">
-                        <option value="">Todos los planes</option>
-                        <option value="PREMIUM">Premium</option>
-                        <option value="GRATUITO">Gratuito</option>
+                    <select id="filtro-plan-oyente" onchange="filtrarOyentes()">
+                        <option value="" data-i18n="admin_oyentes_filter_any">Cualquiera</option>
+                        <option value="Premium" data-i18n="user_plan_premium">Premium</option>
+                        <option value="Gratuito" data-i18n="user_plan_gratuito">Gratuito</option>
                     </select>
                 </div>
             </div>
         </div>
 
-        <!-- Premium Table Oyentes -->
         <table id="tabla-oyentes" class="table-custom">
             <thead>
                 <tr>
-                    <th style="width: 80px;">ID</th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Plan</th>
-                    <th>Estado</th>
-                    <th>Fecha Registro</th>
-                    <th style="text-align: center; width: 180px;">Acciones</th>
+                    <th data-i18n="admin_oyentes_table_id">ID</th>
+                    <th data-i18n="admin_oyentes_table_name">Nombre</th>
+                    <th data-i18n="admin_oyentes_table_email">Correo Electrónico</th>
+                    <th data-i18n="admin_oyentes_table_plan">Plan</th>
+                    <th data-i18n="admin_oyentes_table_status">Estado</th>
+                    <th data-i18n="admin_oyentes_table_actions">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for u in oyentes %}
-                <tr data-nombre="{{ u.nombre_usuario|lower }}" 
+                <tr data-nombre="{{ u.nombre_usuario|lower }} {{ u.email_usuario|lower }}"
                     data-id="{{ u.id_usuario }}"
-                    data-estado="{{ u.estado }}"
-                    data-plan="{{ u.plan_activo|upper }}">
+                    data-plan="{{ u.plan }}"
+                    data-estado="{{ u.estado }}">
                     <td class="ranking-num">#{{ u.id_usuario }}</td>
                     <td><strong>{{ u.nombre_usuario }}</strong></td>
                     <td style="color: var(--ink-3);">{{ u.email_usuario }}</td>
                     <td>
-                        {% if u.plan_activo == 'Premium' %}
-                            <span class="badge-plan badge-premium-table">Premium</span>
-                        {% else %}
-                            <span class="badge-plan badge-gratuito-table">Gratuito</span>
-                        {% endif %}
+                        <span class="badge {% if u.plan == 'Premium' %}badge-premium{% else %}badge-gratuito{% endif %}" data-i18n="user_plan_{{ u.plan|lower }}">{{ u.plan }}</span>
                     </td>
                     <td>
                         {% if u.estado == 'Activo' %}
-                            <span style="color: #27ae60; font-weight: 600;">{{ u.estado }}</span>
+                            <span class="estado-badge estado-activo" data-i18n="admin_oyentes_filter_active">Activo</span>
                         {% else %}
-                            <span style="color: #c0392b; font-weight: 600;">{{ u.estado }}</span>
+                            <span class="estado-badge estado-inactivo" data-i18n="admin_oyentes_filter_inactive">Inactivo</span>
                         {% endif %}
                     </td>
-                    <td style="color: var(--ink-3);">{{ u.fecha_registro }}</td>
-                    <td style="text-align: center;">
-                        {% if u.id_usuario != 12 %}
-                        <div style="display: inline-flex; gap: 8px;">
-                            <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
-                                    onclick="abrirEdicion({{ u.id_usuario }}, '{{ u.nombre_usuario|escapejs }}', '{{ u.email_usuario|escapejs }}', '{{ u.estado|escapejs }}')">
+                    <td>
+                        {% if u.id_usuario == 1 %}
+                            <span class="btn-protegido" data-i18n="admin_oyentes_btn_protected">Protegido</span>
+                        {% else %}
+                            <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border: 1px solid var(--cream-3); border-radius: 4px; color: var(--ink-2); background: transparent;"
+                                    onclick="abrirEdicion({{ u.id_usuario }}, '{{ u.nombre_usuario|escapejs }}', '{{ u.email_usuario|escapejs }}', '{{ u.estado|escapejs }}', '{{ u.telefono|default_if_none:''|escapejs }}', '{{ u.pais|default_if_none:''|escapejs }}', '{{ u.plan|escapejs }}')" data-i18n="admin_oyentes_btn_edit">
                                 Editar
                             </button>
-                            <form method="post" action="/administracion/eliminar/{{ u.id_usuario }}/?id_usuario={{ id_usuario }}" 
-                                  id="del-{{ u.id_usuario }}" style="display:inline; margin: 0;">
-                                {% csrf_token %}
-                                <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
-                                        onclick="confirmarEliminar({{ u.id_usuario }}, '{{ u.nombre_usuario|escapejs }}')">
-                                    Eliminar
-                                </button>
-                            </form>
-                        </div>
-                        {% else %}
-                        <span style="font-size: 0.8rem; color: var(--gold); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Administrador</span>
+                            <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                                    onclick="confirmarEliminar({{ u.id_usuario }}, '{{ u.nombre_usuario|escapejs }}')" data-i18n="admin_oyentes_btn_delete">
+                                Eliminar
+                            </button>
                         {% endif %}
                     </td>
                 </tr>
-                {% empty %}
-                <tr><td colspan="7" class="text-empty" style="text-align: center; padding: 2rem;">No hay oyentes registrados.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <!-- Formulario Nuevo Oyente -->
     <div class="card" style="margin-top: 2rem;">
         <div class="card-header-premium" style="margin-bottom: 1.5rem;">
-            <h2 class="card-title">Registrar Nuevo Oyente</h2>
-            <span class="card-action-btn">Nuevo Registro</span>
+            <h2 class="card-title" data-i18n="admin_oyentes_create_title">Registrar Nuevo Oyente</h2>
+            <span class="card-action-btn" data-i18n="admin_oyentes_create_sub">Nuevo Registro</span>
         </div>
-        <form method="post" action="/administracion/crear/?id_usuario={{ id_usuario }}">
+        <form method="post" action="/administracion/crear/">
             {% csrf_token %}
             <div class="form-two-col">
                 <div class="form-group">
-                    <label>Nombre Completo</label>
+                    <label data-i18n="admin_oyentes_create_name">Nombre Completo</label>
                     <input type="text" name="nombre_usuario" placeholder="Ej: Juan Pérez" required class="form-input"/>
                 </div>
                 <div class="form-group">
-                    <label>Correo Electrónico</label>
+                    <label data-i18n="admin_oyentes_create_email">Correo Electrónico</label>
                     <input type="email" name="email_usuario" placeholder="Ej: juan@soundwave.ec" required class="form-input"/>
                 </div>
                 <div class="form-group">
-                    <label>País de Residencia</label>
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" placeholder="Ej: +593999999999" class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="admin_oyentes_create_country">País</label>
                     <input type="text" name="pais" placeholder="Ej: Ecuador" class="form-input"/>
                 </div>
                 <div class="form-group">
-                    <label>Plan de Suscripción</label>
+                    <label data-i18n="admin_oyentes_create_plan">Plan Inicial</label>
                     <div class="select-custom">
                         <select name="plan">
-                            <option value="Gratuito">Gratuito</option>
-                            <option value="Premium">Premium</option>
+                            <option value="Gratuito" data-i18n="user_plan_gratuito">Gratuito</option>
+                            <option value="Premium" data-i18n="user_plan_premium">Premium</option>
                         </select>
                     </div>
                 </div>
             </div>
             <div style="margin-top: 1.5rem;">
-                <button type="submit" class="btn btn-gold">Registrar Nuevo Oyente</button>
+                <button type="submit" class="btn btn-gold" data-i18n="admin_oyentes_create_btn">Registrar Oyente</button>
             </div>
         </form>
     </div>
 
-    <!-- Modal Editar en Diálogo Premium -->
     <div id="modal-editar" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
-        <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+        <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15); overflow-y: auto; max-height: 90vh;">
             <div class="card-header-premium" style="margin-bottom: 1.5rem;">
-                <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Editar Oyente</h2>
+                <h2 class="card-title" style="color: var(--gold); font-weight: 600;" data-i18n="admin_oyentes_edit_title">Editar Perfil de Oyente</h2>
             </div>
             <form method="post" id="form-editar" action="">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label>Nombre</label>
+                    <label data-i18n="admin_oyentes_edit_name">Nombre</label>
                     <input type="text" name="nombre_usuario" id="edit-nombre" required class="form-input"/>
                 </div>
                 <div class="form-group">
-                    <label>Email</label>
+                    <label data-i18n="admin_oyentes_edit_email">Correo</label>
                     <input type="email" name="email_usuario" id="edit-email" required class="form-input"/>
                 </div>
                 <div class="form-group">
-                    <label>Estado de Cuenta</label>
+                    <label>Contraseña</label>
+                    <input type="password" name="contrasena" id="edit-contrasena" placeholder="Dejar en blanco para no cambiar" class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>País</label>
+                    <input type="text" name="pais" id="edit-pais" class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" id="edit-telefono" class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Plan</label>
+                    <div class="select-custom">
+                        <select name="plan" id="edit-plan">
+                            <option value="Gratuito">Gratuito</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="admin_oyentes_edit_status">Estado de Cuenta</label>
                     <div class="select-custom">
                         <select name="estado" id="edit-estado">
-                            <option value="Activo">Activo</option>
-                            <option value="Inactivo">Inactivo</option>
-                            <option value="Suspendido">Suspendido</option>
+                            <option value="Activo" data-i18n="admin_oyentes_filter_active">Activo</option>
+                            <option value="Inactivo" data-i18n="admin_oyentes_filter_inactive">Inactivo</option>
                         </select>
                     </div>
                 </div>
                 <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
-                    <button type="button" onclick="cerrarEdicion()" class="btn btn-ghost">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" onclick="cerrarEdicion()" class="btn btn-ghost" data-i18n="admin_oyentes_edit_btn_cancel">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="admin_oyentes_edit_btn_save">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- TAB: ARTISTAS -->
 <div id="tab-artistas" class="tab-content" style="display:none">
     <div class="card">
-        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
-            <h2 class="card-title">Artistas en la Plataforma</h2>
-            <span class="card-action-btn">Catálogo de Artistas</span>
+        <div class="card-header-premium" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h2 class="card-title" data-i18n="admin_artistas_title">Artistas en la Plataforma</h2>
+                <span class="card-action-btn" data-i18n="admin_artistas_sub">Catálogo de Artistas</span>
+            </div>
+            <button type="button" class="btn btn-gold" onclick="abrirCrearArtista()">Nuevo Artista</button>
         </div>
-        
-        <!-- Premium Filter artists -->
+
         <div class="filter-bar" style="margin-bottom: 2rem;">
             <div class="filter-group" style="flex: 2;">
-                <label>Buscar Artista</label>
+                <label data-i18n="admin_artistas_search_label">Buscar Artista</label>
                 <input type="text" id="buscar-artista"
                        placeholder="Buscar artista por nombre o ID..."
                        oninput="filtrarTabla('tabla-artistas', this.value)"
                        class="filter-input"/>
             </div>
             <div class="filter-group">
-                <label>País de Origen</label>
+                <label data-i18n="admin_oyentes_create_country">País</label>
                 <div class="filter-select-custom">
                     <select onchange="filtrarPorPais('tabla-artistas', this.value)">
-                        <option value="">Todos los países</option>
+                        <option value="" data-i18n="admin_oyentes_filter_any">Cualquiera</option>
                         <option value="Puerto Rico">Puerto Rico</option>
                         <option value="Colombia">Colombia</option>
                         <option value="USA">USA</option>
@@ -245,18 +248,18 @@
             </div>
         </div>
 
-        <!-- Premium Table Artistas -->
         <table id="tabla-artistas" class="table-custom">
             <thead>
                 <tr>
-                    <th style="width: 80px;">ID</th>
-                    <th>Nombre Artístico</th>
-                    <th>Email</th>
-                    <th>País</th>
-                    <th style="text-align: center;">Álbumes</th>
-                    <th style="text-align: center;">Canciones</th>
-                    <th style="text-align: right;">Reproducciones</th>
-                    <th>Estado</th>
+                    <th style="width: 80px;" data-i18n="admin_oyentes_table_id">ID</th>
+                    <th data-i18n="admin_artistas_table_name">Artista</th>
+                    <th data-i18n="admin_oyentes_table_email">Correo Electrónico</th>
+                    <th data-i18n="admin_artistas_table_country">País</th>
+                    <th style="text-align: center;" data-i18n="admin_sistema_albums">Álbumes Registrados</th>
+                    <th style="text-align: center;" data-i18n="admin_sidebar_artistas">Canciones</th>
+                    <th style="text-align: right;" data-i18n="admin_artistas_table_plays">Reproducciones</th>
+                    <th data-i18n="admin_oyentes_table_status">Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -273,58 +276,400 @@
                     <td style="text-align: right; color: var(--gold); font-weight: 600;">{{ a.total_reproducciones|intcomma }}</td>
                     <td>
                         {% if a.estado == 'Activo' %}
-                            <span style="color: #27ae60; font-weight: 600;">{{ a.estado }}</span>
+                            <span style="color: #27ae60; font-weight: 600;" data-i18n="admin_oyentes_filter_active">{{ a.estado }}</span>
                         {% else %}
-                            <span style="color: #c0392b; font-weight: 600;">{{ a.estado }}</span>
+                            <span style="color: #c0392b; font-weight: 600;" data-i18n="admin_oyentes_filter_inactive">{{ a.estado }}</span>
                         {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border: 1px solid var(--cream-3); border-radius: 4px; color: var(--ink-2); background: transparent;"
+                                onclick="abrirEdicionArtista({{ a.id_artista }}, '{{ a.nombre_artistico|escapejs }}', '{{ a.pais|default_if_none:''|escapejs }}', '{{ a.biografia|default_if_none:''|escapejs }}', '{{ a.estado|escapejs }}')">
+                            Editar
+                        </button>
+                        <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                                onclick="confirmarEliminarArtista({{ a.id_artista }}, '{{ a.nombre_artistico|escapejs }}')">
+                            Eliminar
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="8" class="text-empty" style="text-align: center; padding: 2rem;">No hay artistas registrados.</td></tr>
+                <tr><td colspan="9" class="text-empty" style="text-align: center; padding: 2rem;">No hay artistas registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="modal-crear-artista" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+            <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+                <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Registrar Nuevo Artista</h2>
+            </div>
+            <form method="post" action="/administracion/artista/crear/">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nombre Artístico</label>
+                    <input type="text" name="nombre_artistico" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email_usuario" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>País</label>
+                    <input type="text" name="pais" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Género Musical Principal</label>
+                    <input type="text" name="genero_musical" class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Biografía Corta</label>
+                    <textarea name="biografia" class="form-input" style="height: 100px; resize: none;"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" onclick="cerrarCrearArtista()" class="btn btn-ghost">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-editar-artista" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+            <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+                <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Editar Artista</h2>
+            </div>
+            <form method="post" id="form-editar-artista" action="">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nombre Artístico</label>
+                    <input type="text" name="nombre_artistico" id="edit-art-nombre" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>País</label>
+                    <input type="text" name="pais" id="edit-art-pais" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Género Musical Principal</label>
+                    <input type="text" name="genero_musical" id="edit-art-genero" class="form-input"/>
+                </div>
+                <div class="form-group">
+                    <label>Biografía</label>
+                    <textarea name="biografia" id="edit-art-bio" class="form-input" style="height: 100px; resize: none;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <div class="select-custom">
+                        <select name="estado" id="edit-art-estado">
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" onclick="cerrarEdicionArtista()" class="btn btn-ghost">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="tab-catalogo" class="tab-content" style="display:none">
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h2 class="card-title">Álbumes Registrados</h2>
+                <span class="card-action-btn">Gestión de Álbumes</span>
+            </div>
+            <button type="button" class="btn btn-gold" onclick="abrirCrearAlbum()">Nuevo Álbum</button>
+        </div>
+
+        <div class="filter-bar" style="margin-bottom: 2rem;">
+            <div class="filter-group" style="flex: 2;">
+                <label>Buscar Álbum</label>
+                <input type="text" placeholder="Buscar álbum por título..." oninput="filtrarTabla('tabla-albumes', this.value)" class="filter-input"/>
+            </div>
+        </div>
+
+        <table id="tabla-albumes" class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Título</th>
+                    <th>Artista</th>
+                    <th>Lanzamiento</th>
+                    <th style="text-align: center;">Canciones</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for al in albumes %}
+                <tr data-nombre="{{ al.titulo_album|lower }} {{ al.nombre_artistico|lower }}" data-id="{{ al.id_album }}">
+                    <td class="ranking-num">#{{ al.id_album }}</td>
+                    <td><strong>{{ al.titulo_album }}</strong></td>
+                    <td style="color: var(--ink-3);">{{ al.nombre_artistico }}</td>
+                    <td>{{ al.fecha_lanzamiento|default:"—" }}</td>
+                    <td style="text-align: center; font-weight: 600;">{{ al.total_canciones }}</td>
+                    <td>
+                        <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border: 1px solid var(--cream-3); border-radius: 4px; color: var(--ink-2); background: transparent;"
+                                onclick="abrirEdicionAlbum({{ al.id_album }}, '{{ al.titulo_album|escapejs }}', '{{ al.id_artista }}', '{{ al.fecha_lanzamiento|default:'' }}', '{{ al.descripcion|default:''|escapejs }}')">
+                            Editar
+                        </button>
+                        <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                                onclick="confirmarEliminarAlbum({{ al.id_album }}, '{{ al.titulo_album|escapejs }}')">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-empty" style="text-align: center; padding: 2rem;">No hay álbumes registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h2 class="card-title">Canciones Registradas</h2>
+                <span class="card-action-btn">Gestión del Repertorio</span>
+            </div>
+            <button type="button" class="btn btn-gold" onclick="abrirCrearCancion()">Nueva Canción</button>
+        </div>
+
+        <div class="filter-bar" style="margin-bottom: 2rem;">
+            <div class="filter-group" style="flex: 2;">
+                <label>Buscar Canción</label>
+                <input type="text" placeholder="Buscar canción por título..." oninput="filtrarTabla('tabla-canciones', this.value)" class="filter-input"/>
+            </div>
+        </div>
+
+        <table id="tabla-canciones" class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Título</th>
+                    <th>Álbum</th>
+                    <th>Artista</th>
+                    <th>Duración</th>
+                    <th style="text-align: right;">Reproducciones</th>
+                    <th>Género</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in canciones %}
+                <tr data-nombre="{{ c.titulo_cancion|lower }} {{ c.nombre_artistico|lower }} {{ c.titulo_album|lower }}" data-id="{{ c.id_cancion }}">
+                    <td class="ranking-num">#{{ c.id_cancion }}</td>
+                    <td><strong>{{ c.titulo_cancion }}</strong></td>
+                    <td>{{ c.titulo_album }}</td>
+                    <td style="color: var(--ink-3);">{{ c.nombre_artistico }}</td>
+                    <td>{{ c.duracion_formateada }}</td>
+                    <td style="text-align: right; color: var(--gold); font-weight: 600;">{{ c.num_reproducciones|intcomma }}</td>
+                    <td>{{ c.genero|default:"—" }}</td>
+                    <td>
+                        <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border: 1px solid var(--cream-3); border-radius: 4px; color: var(--ink-2); background: transparent;"
+                                onclick="abrirEdicionCancion({{ c.id_cancion }}, '{{ c.titulo_cancion|escapejs }}', {{ c.id_album }}, {{ c.duracion_seg }}, '{{ c.genero|escapejs }}')">
+                            Editar
+                        </button>
+                        <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                                onclick="confirmarEliminarCancion({{ c.id_cancion }}, '{{ c.titulo_cancion|escapejs }}')">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-empty" style="text-align: center; padding: 2rem;">No hay canciones registradas.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- TAB: SISTEMA -->
+<div id="modal-crear-album" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Registrar Nuevo Álbum</h2>
+        </div>
+        <form method="post" action="/administracion/album/crear/">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Título del Álbum</label>
+                <input type="text" name="titulo_album" required class="form-input"/>
+            </div>
+            <div class="form-group">
+                <label>Artista</label>
+                <div class="select-custom">
+                    <select name="id_artista" required>
+                        <option value="">-- Seleccionar Artista --</option>
+                        {% for art in artistas_list %}
+                            <option value="{{ art.id_artista }}">{{ art.nombre_artistico }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Lanzamiento</label>
+                <input type="date" name="fecha_lanzamiento" class="form-input"/>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion" class="form-input" style="height: 80px; resize: none;"></textarea>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                <button type="button" onclick="cerrarCrearAlbum()" class="btn btn-ghost">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Registrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-editar-album" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Editar Álbum</h2>
+        </div>
+        <form method="post" id="form-editar-album" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Título del Álbum</label>
+                <input type="text" name="titulo_album" id="edit-al-titulo" required class="form-input"/>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Lanzamiento</label>
+                <input type="date" name="fecha_lanzamiento" id="edit-al-fecha" class="form-input"/>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion" id="edit-al-desc" class="form-input" style="height: 80px; resize: none;"></textarea>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                <button type="button" onclick="cerrarEdicionAlbum()" class="btn btn-ghost">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-crear-cancion" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Registrar Nueva Canción</h2>
+        </div>
+        <form method="post" action="/administracion/cancion/crear/">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Título de la Canción</label>
+                <input type="text" name="titulo_cancion" required class="form-input"/>
+            </div>
+            <div class="form-group">
+                <label>Álbum</label>
+                <div class="select-custom">
+                    <select name="id_album" required>
+                        <option value="">-- Seleccionar Álbum --</option>
+                        {% for al in albumes_list %}
+                            <option value="{{ al.id_album }}">{{ al.titulo_album }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Duración</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" name="duracion_min" placeholder="Minutos" min="0" required class="form-input" style="flex: 1;"/>
+                    <span style="font-weight: bold; color: var(--ink-3);">:</span>
+                    <input type="number" name="duracion_seg" placeholder="Segundos" min="0" max="59" required class="form-input" style="flex: 1;"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Género Musical</label>
+                <input type="text" name="genero_musical" class="form-input"/>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                <button type="button" onclick="cerrarCrearCancion()" class="btn btn-ghost">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Registrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-editar-cancion" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15);">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title" style="color: var(--gold); font-weight: 600;">Editar Canción</h2>
+        </div>
+        <form method="post" id="form-editar-cancion" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Título de la Canción</label>
+                <input type="text" name="titulo_cancion" id="edit-can-titulo" required class="form-input"/>
+            </div>
+            <div class="form-group">
+                <label>Duración</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" name="duracion_min" id="edit-can-min" placeholder="Minutos" min="0" required class="form-input" style="flex: 1;"/>
+                    <span style="font-weight: bold; color: var(--ink-3);">:</span>
+                    <input type="number" name="duracion_seg" id="edit-can-seg" placeholder="Segundos" min="0" max="59" required class="form-input" style="flex: 1;"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Género Musical</label>
+                <input type="text" name="genero_musical" id="edit-can-genero" class="form-input"/>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                <button type="button" onclick="cerrarEdicionCancion()" class="btn btn-ghost">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div id="tab-sistema" class="tab-content" style="display:none">
     <div class="stats-grid">
         <div class="stat-card">
-            <span class="stat-label">Usuarios Totales</span>
+            <span class="stat-label" data-i18n="admin_sistema_users">Usuarios Totales</span>
             <div class="stat-value">{{ sistema_stats.total_usuarios }}</div>
             <span class="stat-sub">Cuentas creadas en SoundWave</span>
         </div>
         <div class="stat-card">
-            <span class="stat-label">Canciones en Catálogo</span>
+            <span class="stat-label" data-i18n="admin_sistema_songs">Canciones en Catálogo</span>
             <div class="stat-value">{{ sistema_stats.total_canciones }}</div>
             <span class="stat-sub">Archivos multimedia activos</span>
         </div>
         <div class="stat-card">
-            <span class="stat-label">Álbumes Publicados</span>
+            <span class="stat-label" data-i18n="admin_sistema_albums">Álbumes Registrados</span>
             <div class="stat-value">{{ sistema_stats.total_albumes }}</div>
             <span class="stat-sub">Colecciones registradas</span>
         </div>
         <div class="stat-card">
-            <span class="stat-label">Reproducciones Totales</span>
+            <span class="stat-label" data-i18n="admin_sistema_plays">Escuchas Totales</span>
             <div class="stat-value">{{ sistema_stats.total_reproducciones|intcomma }}</div>
             <span class="stat-sub">Interacciones globales</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-label">Suscripciones Activas</span>
-            <div class="stat-value">{{ sistema_stats.suscripciones_activas }}</div>
-            <span class="stat-sub">Cuentas premium recurrentes</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-label">Total Regalías Pagadas</span>
-            <div class="stat-value">${{ sistema_stats.total_regalias|floatformat:2 }}</div>
-            <span class="stat-sub">Compensación total a creadores</span>
         </div>
     </div>
 </div>
 
-<!-- JavaScript de tabs y búsqueda sin emojis -->
+<div id="modal-eliminar" class="modal-overlay" style="display:none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 480px; max-width: 95vw; background: #ffffff; margin: 0; box-shadow: 0 15px 35px rgba(26,23,20,0.15); border-top: 5px solid var(--crimson);">
+        <div class="card-header-premium" style="margin-bottom: 1.5rem;">
+            <h2 class="card-title" style="color: var(--crimson); font-weight: 600;">Confirmar Eliminación</h2>
+        </div>
+        <div style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink-2); margin-bottom: 1.5rem; line-height: 1.6; text-align: left;">
+            <p>Esta acción es <strong>irreversible</strong> y eliminará permanentemente todos los datos asociados de <strong id="delete-entity-display"></strong>.</p>
+            <p style="margin-top: 0.5rem; color: var(--crimson);">Para confirmar, escribe el nombre exacto de la entidad:</p>
+        </div>
+        <input type="text" id="delete-confirm-input" class="form-input" style="margin-bottom: 1.5rem;" oninput="validarConfirmacionEliminacion()"/>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="button" onclick="cerrarEliminar()" class="btn btn-ghost">Cancelar</button>
+            <button type="button" id="btn-eliminar-confirmar" class="btn btn-danger" disabled onclick="ejecutarEliminacion()">Eliminar Permanentemente</button>
+        </div>
+    </div>
+</div>
+
 <script>
+let entidadAEliminar = { id: null, nombre: '', tipo: '' };
+
 function switchTab(event, tab) {
     document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
@@ -376,11 +721,35 @@ function filtrarPorPais(tablaId, pais) {
     });
 }
 
-function abrirEdicion(id, nombre, email, estado) {
+function filtrarOyentes() {
+    const query = document.getElementById('filtro-nombre-oyente').value.toLowerCase().trim();
+    const estado = document.getElementById('filtro-estado-oyente').value;
+    const plan = document.getElementById('filtro-plan-oyente').value;
+    const filas = document.querySelectorAll('#tabla-oyentes tbody tr');
+    filas.forEach(fila => {
+        const nombre = fila.dataset.nombre || '';
+        const filaEstado = fila.dataset.estado || '';
+        const filaPlan = fila.dataset.plan || '';
+        const matchesQuery = !query || nombre.includes(query);
+        const matchesEstado = !estado || filaEstado === estado;
+        const matchesPlan = !plan || filaPlan === plan;
+        if (matchesQuery && matchesEstado && matchesPlan) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+function abrirEdicion(id, nombre, email, estado, telefono, pais, plan) {
     document.getElementById('edit-nombre').value = nombre;
     document.getElementById('edit-email').value = email;
     document.getElementById('edit-estado').value = estado;
-    document.getElementById('form-editar').action = `/administracion/editar/${id}/?id_usuario={{ id_usuario }}`;
+    document.getElementById('edit-contrasena').value = '';
+    document.getElementById('edit-telefono').value = telefono;
+    document.getElementById('edit-pais').value = pais;
+    document.getElementById('edit-plan').value = plan;
+    document.getElementById('form-editar').action = `/administracion/editar/${id}/`;
     document.getElementById('modal-editar').style.display = 'flex';
 }
 
@@ -389,9 +758,172 @@ function cerrarEdicion() {
 }
 
 function confirmarEliminar(id, nombre) {
-    if (confirm('¿Eliminar a ' + nombre + ' (ID #' + id + ')? Esta acción no se puede deshacer.')) {
-        document.getElementById('del-' + id).submit();
+    entidadAEliminar = { id: id, nombre: nombre, tipo: 'oyente' };
+    document.getElementById('delete-entity-display').textContent = nombre + ' (Usuario ID #' + id + ')';
+    document.getElementById('delete-confirm-input').value = '';
+    document.getElementById('btn-eliminar-confirmar').disabled = true;
+    document.getElementById('modal-eliminar').style.display = 'flex';
+}
+
+function confirmarEliminarArtista(id, nombre) {
+    entidadAEliminar = { id: id, nombre: nombre, tipo: 'artista' };
+    document.getElementById('delete-entity-display').textContent = nombre + ' (Artista ID #' + id + ')';
+    document.getElementById('delete-confirm-input').value = '';
+    document.getElementById('btn-eliminar-confirmar').disabled = true;
+    document.getElementById('modal-eliminar').style.display = 'flex';
+}
+
+function validarConfirmacionEliminacion() {
+    const inputVal = document.getElementById('delete-confirm-input').value.trim();
+    const btn = document.getElementById('btn-eliminar-confirmar');
+    if (inputVal === entidadAEliminar.nombre) {
+        btn.disabled = false;
+    } else {
+        btn.disabled = true;
     }
+}
+
+function cerrarEliminar() {
+    document.getElementById('modal-eliminar').style.display = 'none';
+}
+
+function ejecutarEliminacion() {
+    if (entidadAEliminar.tipo === 'oyente') {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = `/administracion/eliminar/${entidadAEliminar.id}/`;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    } else if (entidadAEliminar.tipo === 'artista') {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = `/administracion/artista/eliminar/${entidadAEliminar.id}/`;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    } else if (entidadAEliminar.tipo === 'album') {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = `/administracion/album/eliminar/${entidadAEliminar.id}/`;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    } else if (entidadAEliminar.tipo === 'cancion') {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = `/administracion/cancion/eliminar/${entidadAEliminar.id}/`;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function abrirCrearArtista() {
+    document.getElementById('modal-crear-artista').style.display = 'flex';
+}
+
+function cerrarCrearArtista() {
+    document.getElementById('modal-crear-artista').style.display = 'none';
+}
+
+function abrirEdicionArtista(id, nombre, pais, biografia, estado) {
+    document.getElementById('edit-art-nombre').value = nombre;
+    document.getElementById('edit-art-pais').value = pais;
+    document.getElementById('edit-art-bio').value = biografia;
+    document.getElementById('edit-art-estado').value = estado;
+    document.getElementById('form-editar-artista').action = `/administracion/artista/editar/${id}/`;
+    document.getElementById('modal-editar-artista').style.display = 'flex';
+}
+
+function cerrarEdicionArtista() {
+    document.getElementById('modal-editar-artista').style.display = 'none';
+}
+
+function abrirCrearAlbum() {
+    document.getElementById('modal-crear-album').style.display = 'flex';
+}
+
+function cerrarCrearAlbum() {
+    document.getElementById('modal-crear-album').style.display = 'none';
+}
+
+function abrirEdicionAlbum(id, titulo, id_artista, fecha, descripcion) {
+    document.getElementById('edit-al-titulo').value = titulo;
+    if (fecha) {
+        let parts = fecha.split('/');
+        if (parts.length === 3) {
+            document.getElementById('edit-al-fecha').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        } else {
+            document.getElementById('edit-al-fecha').value = fecha;
+        }
+    } else {
+        document.getElementById('edit-al-fecha').value = '';
+    }
+    document.getElementById('edit-al-desc').value = descripcion;
+    document.getElementById('form-editar-album').action = `/administracion/album/editar/${id}/`;
+    document.getElementById('modal-editar-album').style.display = 'flex';
+}
+
+function cerrarEdicionAlbum() {
+    document.getElementById('modal-editar-album').style.display = 'none';
+}
+
+function confirmarEliminarAlbum(id, titulo) {
+    entidadAEliminar = { id: id, nombre: titulo, tipo: 'album' };
+    document.getElementById('delete-entity-display').textContent = titulo + ' (Álbum ID #' + id + ' y todas sus canciones)';
+    document.getElementById('delete-confirm-input').value = '';
+    document.getElementById('btn-eliminar-confirmar').disabled = true;
+    document.getElementById('modal-eliminar').style.display = 'flex';
+}
+
+function abrirCrearCancion() {
+    document.getElementById('modal-crear-cancion').style.display = 'flex';
+}
+
+function cerrarCrearCancion() {
+    document.getElementById('modal-crear-cancion').style.display = 'none';
+}
+
+function abrirEdicionCancion(id, titulo, id_album, duracion_seg, genero) {
+    document.getElementById('edit-can-titulo').value = titulo;
+    document.getElementById('edit-can-min').value = Math.floor(duracion_seg / 60);
+    document.getElementById('edit-can-seg').value = duracion_seg % 60;
+    document.getElementById('edit-can-genero').value = genero;
+    document.getElementById('form-editar-cancion').action = `/administracion/cancion/editar/${id}/`;
+    document.getElementById('modal-editar-cancion').style.display = 'flex';
+}
+
+function cerrarEdicionCancion() {
+    document.getElementById('modal-editar-cancion').style.display = 'none';
+}
+
+function confirmarEliminarCancion(id, titulo) {
+    entidadAEliminar = { id: id, nombre: titulo, tipo: 'cancion' };
+    document.getElementById('delete-entity-display').textContent = titulo + ' (Canción ID #' + id + ')';
+    document.getElementById('delete-confirm-input').value = '';
+    document.getElementById('btn-eliminar-confirmar').disabled = true;
+    document.getElementById('modal-eliminar').style.display = 'flex';
 }
 </script>
 

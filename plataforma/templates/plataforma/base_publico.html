@@ -1,0 +1,314 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SoundWave - Tu música, sin límites{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'plataforma/css/estilos_globales.css' %}?v=1.3">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="{% static 'plataforma/js/traducciones.js' %}?v=2.2"></script>
+  <script src="{% static 'plataforma/js/i18n.js' %}?v=2.0"></script>
+
+  <style>
+    body {
+      display: block; 
+      background-color: var(--cream) !important;
+      color: var(--ink) !important;
+      overflow-x: hidden;
+    }
+
+    .landing-navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background-color: rgba(250, 247, 242, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--cream-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4rem;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .nav-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .nav-logo-img {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .nav-logo-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--crimson);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .nav-menu-and-actions {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ink-2);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--crimson);
+    }
+
+    .nav-link.active {
+      color: var(--crimson) !important;
+      font-weight: 700;
+    }
+
+    .landing-footer {
+      background-color: var(--ink);
+      color: var(--cream-3);
+      padding: 5rem 4rem 2.5rem 4rem;
+      margin-top: 80px;
+      position: relative;
+    }
+
+    .landing-footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--crimson) 0%, var(--gold) 100%);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 3rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 3rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+      padding-left: 2.5rem;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .footer-logo-img {
+      height: 64px;
+      width: auto;
+      object-fit: contain;
+      filter: brightness(0) invert(1) sepia(1) saturate(3.5) hue-rotate(10deg) brightness(1.05);
+    }
+
+    .footer-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gold);
+      line-height: 1.5;
+      text-align: left;
+      margin-top: 0.75rem;
+    }
+
+    .footer-column {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .footer-column-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--gold);
+      margin-bottom: 1.25rem;
+      display: block;
+    }
+
+    .footer-column-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .footer-column-link {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--cream-2);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      display: inline-block;
+    }
+
+    .footer-column-link:hover {
+      color: var(--crimson);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-bottom-copyright {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      color: var(--ink-3);
+      text-align: center;
+    }
+
+    @media (max-width: 968px) {
+      .landing-navbar {
+        padding: 0 2rem;
+      }
+      .nav-menu-and-actions {
+        gap: 1rem;
+      }
+      .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        text-align: center;
+      }
+      .footer-info, .footer-column {
+        align-items: center;
+        padding-left: 0;
+      }
+      .footer-column-links {
+        align-items: center;
+      }
+      .footer-tagline {
+        text-align: center;
+      }
+      .footer-bottom {
+        text-align: center;
+      }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <header class="landing-navbar">
+    <a href="/" class="nav-logo-container">
+      <img src="{% static 'plataforma/img/logo.png' %}?v=2.0" alt="SoundWave" class="nav-logo-img" loading="eager">
+    </a>
+
+    <div class="nav-menu-and-actions">
+      <a href="/soporte/" class="nav-link{% if request.path == '/soporte/' %} active{% endif %}" data-i18n="public_nav_soporte">Soporte</a>
+      <a href="/planes/" class="nav-link{% if request.path == '/planes/' %} active{% endif %}" data-i18n="public_nav_planes">Planes</a>
+      <a href="{% url 'login' %}" class="btn btn-ghost" style="padding: 0.6rem 1.2rem; border-radius: 8px;" data-i18n="public_nav_iniciar_sesion">Iniciar sesión</a>
+      <a href="/registro/" class="btn btn-gold" style="padding: 0.6rem 1.2rem; border-radius: 8px;" data-i18n="public_nav_registrarse">Registrarse</a>
+    </div>
+  </header>
+
+  {% block contenido %}{% endblock %}
+
+  <footer class="landing-footer">
+    <div class="footer-content">
+      <div class="footer-info">
+        <a href="/" class="footer-logo">
+          <img src="{% static 'plataforma/img/logo.png' %}?v=2.0" alt="SoundWave" class="footer-logo-img" loading="lazy">
+        </a>
+        <p class="footer-tagline">Vive la música</p>
+      </div>
+
+      <div class="footer-column">
+        <span class="footer-column-title">Plataforma</span>
+        <ul class="footer-column-links">
+          <li><a href="/catalogo/" class="footer-column-link">Catálogo</a></li>
+          <li><a href="/planes/" class="footer-column-link">Planes</a></li>
+          <li><a href="/soporte/" class="footer-column-link">Soporte</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-column">
+        <span class="footer-column-title">Cuenta</span>
+        <ul class="footer-column-links">
+          <li><a href="{% url 'login' %}" class="footer-column-link">Iniciar sesión</a></li>
+          <li><a href="/informacion/" class="footer-column-link">Más información</a></li>
+          <li><a href="/terminos-y-condiciones/" class="footer-column-link">Términos y condiciones</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-bottom-copyright">
+        &copy; 2026 SoundWave Inc.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const scrollSections = document.querySelectorAll('.card, section');
+      scrollSections.forEach(section => {
+        section.classList.add('reveal-section');
+      });
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('revealed');
+              obs.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.05 });
+        scrollSections.forEach(section => {
+          observer.observe(section);
+        });
+      } else {
+        scrollSections.forEach(section => {
+          section.classList.add('revealed');
+        });
+      }
+    });
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

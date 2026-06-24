@@ -1,0 +1,203 @@
+{% extends 'plataforma/base_publico.html' %}
+{% load static %}
+
+{% block title %}SoundWave - Verificación Estudiantil{% endblock %}
+
+{% block extra_css %}
+<style>
+  .verify-container {
+    max-width: 550px;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .verify-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verify-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .verify-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink-3);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .verify-form {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-label {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--ink-2);
+    margin-bottom: 0.4rem;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .verify-input, .verify-select {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border-radius: 12px;
+    border: 1px solid var(--cream-3);
+    background-color: rgba(255, 255, 255, 0.8);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    outline: none;
+    transition: all 0.3s ease;
+  }
+
+  .verify-input:focus, .verify-select:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 12px rgba(20, 110, 120, 0.15);
+    background-color: #ffffff;
+  }
+
+  .verify-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23777777' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1.2rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+
+  .verify-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    background-color: var(--teal);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(20, 110, 120, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .verify-btn:hover {
+    background-color: #125e68;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(20, 110, 120, 0.3);
+  }
+
+  .verify-btn:disabled {
+    background-color: var(--ink-3);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="verify-container">
+  <div class="verify-card">
+    <h1 class="verify-title">Verificación de Estatus Estudiantil</h1>
+    <p class="verify-subtitle">
+      Para poder disfrutar del 50% de descuento en tu Plan Estudiante de SoundWave, necesitamos validar que eres un estudiante activo. Por favor completa los datos de tu institución.
+    </p>
+
+    <form class="verify-form" id="verifyForm">
+      <div>
+        <label class="form-label" for="nombre">Nombre Completo</label>
+        <input type="text" id="nombre" name="nombre" class="verify-input" placeholder="Ingresa tu nombre completo" required>
+      </div>
+
+      <div>
+        <label class="form-label" for="institucion">Institución Educativa</label>
+        <select id="institucion" name="institucion" class="verify-select" required>
+          <option value="" disabled selected>Selecciona tu Universidad / Instituto</option>
+          <option value="UDLA">Universidad de las Américas (UDLA)</option>
+          <option value="USFQ">Universidad San Francisco de Quito (USFQ)</option>
+          <option value="PUCE">Pontificia Universidad Católica del Ecuador (PUCE)</option>
+          <option value="ESPE">Universidad de las Fuerzas Armadas (ESPE)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label" for="correo">Correo Electrónico Institucional</label>
+        <input type="email" id="correo" name="correo" class="verify-input" placeholder="ejemplo@universidad.edu.ec" required>
+      </div>
+
+      <button type="submit" class="verify-btn" id="verifyBtn">
+        <span class="spinner" id="btnSpinner"></span>
+        <span id="btnText">Verificar Estatus Estudiantil</span>
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('verifyForm');
+    const btn = document.getElementById('verifyBtn');
+    const spinner = document.getElementById('btnSpinner');
+    const btnText = document.getElementById('btnText');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'Verificando con la institución...';
+
+      setTimeout(function() {
+        window.location.href = '/registro/?plan=estudiante';
+      }, 1500);
+    });
+  });
+</script>
+{% endblock %}

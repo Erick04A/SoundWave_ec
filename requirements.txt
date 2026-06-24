@@ -5,3 +5,8 @@ gunicorn
 whitenoise
 pytz
 reportlab
+pymongo
+dnspython
+django-allauth
+pyjwt
+cryptography

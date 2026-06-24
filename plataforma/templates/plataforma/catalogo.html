@@ -3,22 +3,21 @@
 
 <div class="catalogo-header">
     <div>
-        <h1 class="catalogo-title">Catálogo Musical</h1>
-        <p class="catalogo-sub">Explora el universo de artistas y canciones disponibles en la plataforma</p>
+        <h1 class="catalogo-title" data-i18n="catalogo_title">Catálogo Musical</h1>
+        <p class="catalogo-sub" data-i18n="catalogo_subtitle">Explora el universo de artistas y canciones disponibles en la plataforma</p>
     </div>
     {% if filtro_artista or filtro_genero %}
-    <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}" class="btn-limpiar-filtros">
+    <a href="{% url 'catalogo' %}" class="btn-limpiar-filtros" data-i18n="catalogo_btn_clear">
         Limpiar filtros
     </a>
     {% endif %}
 </div>
 
 <form id="filter-form" method="GET" action="{% url 'catalogo' %}">
-    <input type="hidden" name="id_usuario" value="{{ id_usuario }}">
     <div class="catalogo-filter-bar">
 
         <div class="filter-field filter-field-search">
-            <label for="search-input" class="filter-label">Buscar cancion o artista</label>
+            <label for="search-input" class="filter-label" data-i18n="catalogo_search_label">Buscar cancion o artista</label>
             <div class="search-input-wrapper">
                 <svg class="search-icon-svg" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
@@ -29,16 +28,17 @@
                     type="text"
                     class="catalogo-search-input"
                     placeholder="Titulo, artista o album..."
+                    data-i18n-placeholder="catalogo_search_placeholder"
                     autocomplete="off"
                 >
             </div>
         </div>
 
         <div class="filter-field">
-            <label for="filtro_artista" class="filter-label">Artista</label>
+            <label for="filtro_artista" class="filter-label" data-i18n="catalogo_filter_artist">Artista</label>
             <div class="catalogo-select-wrapper">
                 <select id="filtro_artista" name="filtro_artista" class="catalogo-select" onchange="document.getElementById('filter-form').submit()">
-                    <option value="">Todos los artistas</option>
+                    <option value="" data-i18n="catalogo_filter_all_artists">Todos los artistas</option>
                     {% for artista in lista_artistas_dropdown %}
                     <option value="{{ artista }}" {% if artista == filtro_artista %}selected{% endif %}>{{ artista }}</option>
                     {% endfor %}
@@ -50,10 +50,10 @@
         </div>
 
         <div class="filter-field">
-            <label for="filtro_genero" class="filter-label">Genero musical</label>
+            <label for="filtro_genero" class="filter-label" data-i18n="catalogo_filter_genre">Genero musical</label>
             <div class="catalogo-select-wrapper">
                 <select id="filtro_genero" name="filtro_genero" class="catalogo-select" onchange="document.getElementById('filter-form').submit()">
-                    <option value="">Todos los generos</option>
+                    <option value="" data-i18n="catalogo_filter_all_genres">Todos los generos</option>
                     {% for genero in lista_generos_dropdown %}
                     <option value="{{ genero }}" {% if genero == filtro_genero %}selected{% endif %}>{{ genero }}</option>
                     {% endfor %}
@@ -66,7 +66,7 @@
 
         <div class="filter-field filter-field-action">
             <label class="filter-label">&nbsp;</label>
-            <button type="submit" class="btn-aplicar">Aplicar</button>
+            <button type="submit" class="btn-aplicar" data-i18n="catalogo_btn_apply">Aplicar</button>
         </div>
 
     </div>
@@ -74,17 +74,17 @@
 
 {% if filtro_artista or filtro_genero %}
 <div class="filtros-activos-bar">
-    <span class="filtros-activos-label">Filtrando por:</span>
+    <span class="filtros-activos-label" data-i18n="catalogo_filtering_by">Filtrando por:</span>
     {% if filtro_artista %}
     <span class="filtro-chip">
-        Artista: <strong>{{ filtro_artista }}</strong>
-        <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}{% if filtro_genero %}&filtro_genero={{ filtro_genero }}{% endif %}" class="chip-remove" title="Quitar filtro">x</a>
+        <span data-i18n="catalogo_filter_artist">Artista</span>: <strong>{{ filtro_artista }}</strong>
+        <a href="{% url 'catalogo' %}{% if filtro_genero %}?filtro_genero={{ filtro_genero }}{% endif %}" class="chip-remove" data-i18n-title="catalogo_remove_filter" title="Quitar filtro">x</a>
     </span>
     {% endif %}
     {% if filtro_genero %}
     <span class="filtro-chip">
-        Genero: <strong>{{ filtro_genero }}</strong>
-        <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}{% if filtro_artista %}&filtro_artista={{ filtro_artista }}{% endif %}" class="chip-remove" title="Quitar filtro">x</a>
+        <span data-i18n="catalogo_filter_genre">Genero</span>: <strong>{{ filtro_genero }}</strong>
+        <a href="{% url 'catalogo' %}{% if filtro_artista %}?filtro_artista={{ filtro_artista }}{% endif %}" class="chip-remove" data-i18n-title="catalogo_remove_filter" title="Quitar filtro">x</a>
     </span>
     {% endif %}
 </div>
@@ -92,17 +92,17 @@
 
 <div class="card">
     <div class="card-header-premium">
-        <h2 class="card-title">Artistas Populares</h2>
-        <span class="card-action-btn">Ranking por reproducciones</span>
+        <h2 class="card-title" data-i18n="catalogo_title_popular_artists">Artistas Populares</h2>
+        <span class="card-action-btn" data-i18n="catalogo_ranking_sub">Ranking por reproducciones</span>
     </div>
     {% if artistas %}
     <table class="table-custom" id="tabla-artistas">
         <thead>
             <tr>
-                <th style="width: 80px;">Puesto</th>
-                <th>Artista</th>
-                <th>Pais de Origen</th>
-                <th style="text-align: right;">Total Reproducciones</th>
+                <th style="width: 80px;" data-i18n="catalogo_col_rank">Puesto</th>
+                <th data-i18n="dashboard_col_artist">Artista</th>
+                <th data-i18n="catalogo_col_country">Pais de Origen</th>
+                <th style="text-align: right;" data-i18n="catalogo_col_plays">Total Reproducciones</th>
             </tr>
         </thead>
         <tbody>
@@ -111,36 +111,36 @@
                 data-artista="{{ artista.nombre_artistico|lower }}"
                 data-pais="{{ artista.pais|lower }}">
                 <td class="ranking-num">{{ forloop.counter }}</td>
-                <td><strong>{{ artista.nombre_artistico }}</strong></td>
+                <td><strong><a href="{% url 'detalle_artista' id_artista=artista.id_artista %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);">{{ artista.nombre_artistico }}</a></strong></td>
                 <td>{{ artista.pais }}</td>
                 <td class="reps-num" style="text-align: right;">{{ artista.total_reproducciones }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <p id="artistas-empty-msg" class="text-empty" style="display:none; margin-top: 1.5rem;">Ningun artista coincide con la busqueda.</p>
+    <p id="artistas-empty-msg" class="text-empty" style="display:none; margin-top: 1.5rem;" data-i18n="catalogo_empty_artists_search">Ningun artista coincide con la busqueda.</p>
     {% else %}
-    <p class="text-empty">No se registran datos de artistas en el catalogo.</p>
+    <p class="text-empty" data-i18n="catalogo_empty_artists">No se registran datos de artistas en el catalogo.</p>
     {% endif %}
 </div>
 
 <div class="card" style="margin-bottom: 2.5rem;">
     <div class="card-header-premium">
-        <h2 class="card-title">Canciones del Catalogo</h2>
+        <h2 class="card-title" data-i18n="catalogo_title_songs">Canciones del Catalogo</h2>
         <span class="card-action-btn" id="canciones-counter">
-            {% if filtro_artista or filtro_genero %}{{ canciones|length }} resultado{% if canciones|length != 1 %}s{% endif %}{% else %}Top 20 Mas Escuchadas{% endif %}
+            {% if filtro_artista or filtro_genero %}{{ canciones|length }} resultado{% if canciones|length != 1 %}s{% endif %}{% else %}<span data-i18n="catalogo_top_20_plays">Top 20 Mas Escuchadas</span>{% endif %}
         </span>
     </div>
     {% if canciones %}
     <table class="table-custom" id="tabla-canciones">
         <thead>
             <tr>
-                <th style="width: 60px; text-align: center;">Escuchar</th>
-                <th>Titulo</th>
-                <th>Artista</th>
-                <th>Album</th>
-                <th style="text-align: center; width: 100px;">Duracion</th>
-                <th style="text-align: right; width: 150px;">Reproducciones</th>
+                <th style="width: 60px; text-align: center;" data-i18n="catalogo_col_play">Escuchar</th>
+                <th data-i18n="catalogo_col_title">Titulo</th>
+                <th data-i18n="dashboard_col_artist">Artista</th>
+                <th data-i18n="catalogo_col_album">Album</th>
+                <th style="text-align: center; width: 100px;" data-i18n="catalogo_col_duration">Duracion</th>
+                <th style="text-align: right; width: 150px;" data-i18n="catalogo_col_plays">Reproducciones</th>
             </tr>
         </thead>
         <tbody id="tbody-canciones">
@@ -156,17 +156,17 @@
                     </button>
                 </td>
                 <td><strong>{{ cancion.Cancion }}</strong></td>
-                <td>{{ cancion.Artista }}</td>
-                <td><span style="color: var(--ink-3); font-size: 0.9rem;">{{ cancion.Album }}</span></td>
+                <td><a href="{% url 'detalle_artista' id_artista=cancion.id_artista %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);">{{ cancion.Artista }}</a></td>
+                <td><a href="{% url 'detalle_album' id_album=cancion.id_album %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);"><span style="color: var(--ink-3); font-size: 0.9rem;">{{ cancion.Album }}</span></a></td>
                 <td style="text-align: center; color: var(--gold); font-weight: 500;">{{ cancion.DuracionFormateada }}</td>
                 <td class="reps-num-{{ cancion.id_cancion }}" style="text-align: right; font-weight: 600;">{{ cancion.Reproducciones }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <p id="canciones-empty-msg" class="text-empty" style="display:none; margin-top: 1.5rem;">Ninguna cancion coincide con la busqueda.</p>
+    <p id="canciones-empty-msg" class="text-empty" style="display:none; margin-top: 1.5rem;" data-i18n="catalogo_empty_songs_search">Ninguna cancion coincide con la busqueda.</p>
     {% else %}
-    <p class="text-empty">No se registran canciones con los filtros seleccionados.</p>
+    <p class="text-empty" data-i18n="catalogo_empty_songs">No se registran canciones con los filtros seleccionados.</p>
     {% endif %}
 </div>
 
@@ -220,7 +220,10 @@ if (searchInput) {
 function reproducirCancion(btn) {
     const idCancion = btn.getAttribute('data-id');
     const original = btn.innerHTML;
-    btn.innerHTML = '&#8987;';
+    if (typeof createRipple === 'function') {
+        createRipple(btn, window.event);
+    }
+    btn.innerHTML = '<span class="spinner-inline"></span>';
     btn.disabled = true;
 
     fetch('/catalogo/reproducir/' + idCancion + '/')
