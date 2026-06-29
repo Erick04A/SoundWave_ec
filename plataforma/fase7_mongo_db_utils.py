@@ -94,14 +94,37 @@ def execute_non_query(query: str, params: Union[List[Any], None] = None) -> int:
 def execute_stored_procedure(sp_name: str, params: Union[List[Any], None] = None) -> List[Dict[str, Any]]:
     return []
 
-def crear_usuario_sp(id_rol, nombre, email, contrasena, estado='Activo'):
+def crear_usuario_sp(id_rol, nombre, email, contrasena, estado='Activo', tipo_plan=None):
     db = get_mongo_db()
     rol_map = {1: 'Administrador', 2: 'Artista', 3: 'Oyente', 4: 'Premium'}
     rol_str = rol_map.get(int(id_rol), 'Oyente')
     
-    max_user = db.usuarios.find_one(sort=[("id_usuario", -1)])
+    max_user = db.usuarios.find_one({"id_usuario": {"$exists": True}}, sort=[("id_usuario", -1)])
     next_id = (max_user["id_usuario"] + 1) if max_user else 1
     
+    suscripcion_doc = None
+    if tipo_plan == 'Premium':
+        from datetime import timedelta
+        max_sub = db.suscripciones.find_one({"id_suscripcion": {"$exists": True}}, sort=[("id_suscripcion", -1)])
+        next_sub_id = (max_sub["id_suscripcion"] + 1) if max_sub else 1
+        fecha_ini = datetime.now()
+        fecha_fi = fecha_ini + timedelta(days=30)
+        
+        suscripcion_doc = {
+            "id_suscripcion": next_sub_id,
+            "usuario": {
+                "id_usuario": next_id,
+                "nombre_usuario": nombre,
+                "email_usuario": email
+            },
+            "tipo_plan": "Premium",
+            "fecha_inicio": fecha_ini,
+            "fecha_fin": fecha_fi,
+            "estado": "Activa",
+            "historial_pagos": []
+        }
+        db.suscripciones.insert_one(suscripcion_doc)
+        
     db.usuarios.insert_one({
         "id_usuario": next_id,
         "nombre_usuario": nombre,
@@ -111,7 +134,13 @@ def crear_usuario_sp(id_rol, nombre, email, contrasena, estado='Activo'):
         "rol": rol_str,
         "pais": "Ecuador",
         "fecha_registro": datetime.now(),
-        "suscripcion_activa": None,
+        "suscripcion_activa": {
+            "id_suscripcion": suscripcion_doc["id_suscripcion"],
+            "tipo_plan": "Premium",
+            "fecha_inicio": suscripcion_doc["fecha_inicio"],
+            "fecha_fin": suscripcion_doc["fecha_fin"],
+            "estado": "Activa"
+        } if suscripcion_doc else None,
         "albumes_guardados": [],
         "likes_canciones": [],
         "artistas_seguidos": [],
@@ -575,7 +604,7 @@ def procesar_renovacion_mongo(id_suscripcion, estado_pago):
         }}
     )
     
-    pago_id = db.suscripciones.count_documents({}) + 1
+    pago_id = db.suscripciones.count_documents({"id_suscripcion": {"$exists": True}}) + 1
     db.suscripciones.update_one(
         {"id_suscripcion": id_sub},
         {"$push": {"historial_pagos": {
@@ -621,7 +650,7 @@ def get_administracion_data_mongo(id_usuario):
             "fecha_registro": fr_str
         })
         
-    artistas_cursor = db.artistas.find().sort("nombre_artistico", 1)
+    artistas_cursor = db.artistas.find({"id_artista": {"$exists": True}}).sort("nombre_artistico", 1)
     artistas = []
     for a in artistas_cursor:
         id_art = a["id_artista"]
@@ -651,14 +680,15 @@ def get_administracion_data_mongo(id_usuario):
         
     artistas = sorted(artistas, key=lambda x: x["total_reproducciones"], reverse=True)
     
-    total_usuarios = db.usuarios.count_documents({})
-    total_canciones = db.canciones.count_documents({})
+    total_usuarios = db.usuarios.count_documents({"id_usuario": {"$exists": True}})
+    total_canciones = db.canciones.count_documents({"id_cancion": {"$exists": True}})
     total_albumes = db.artistas.aggregate([
         {"$unwind": "$albumes"},
         {"$group": {"_id": None, "count": {"$sum": 1}}}
     ])
-    total_albumes_val = list(total_albumes)[0]["count"] if list(total_albumes) else 0
-    total_reproducciones = db.reproducciones.count_documents({})
+    total_albumes_list = list(total_albumes)
+    total_albumes_val = total_albumes_list[0]["count"] if total_albumes_list else 0
+    total_reproducciones = db.reproducciones.count_documents({"id_historial": {"$exists": True}})
     suscripciones_activas = db.suscripciones.count_documents({"estado": "Activa"})
     total_regalias = total_reproducciones * 0.004
     
@@ -977,7 +1007,7 @@ def generar_reporte_mongo(report_id, param_artista=None, param_usuario=None, par
 
 def crear_artista_sp(nombre_artistico, email, pais, genero_musical=None, biografia=None):
     db = get_mongo_db()
-    max_art = db.artistas.find_one(sort=[("id_artista", -1)])
+    max_art = db.artistas.find_one({"id_artista": {"$exists": True}}, sort=[("id_artista", -1)])
     next_id = (max_art["id_artista"] + 1) if max_art else 1
     db.artistas.insert_one({
         "id_artista": next_id,
@@ -1100,7 +1130,7 @@ def crear_cancion_sp(id_album, titulo_cancion, duracion_seg, genero_musical=None
         if alb.get("id_album") == id_alb:
             titulo_album = alb.get("titulo_album", "")
             break
-    max_song = db.canciones.find_one(sort=[("id_cancion", -1)])
+    max_song = db.canciones.find_one({"id_cancion": {"$exists": True}}, sort=[("id_cancion", -1)])
     next_id = (max_song["id_cancion"] + 1) if max_song else 1
     new_song = {
         "id_cancion": next_id,
@@ -1212,3 +1242,35 @@ def obtener_perfil_usuario_mongo(id_usuario):
         "plan": plan_activo,
         "email_usuario": user.get("email_usuario")
     }
+
+def agregar_album_guardado(id_usuario, id_album):
+    db = get_mongo_db()
+    id_usr = int(id_usuario)
+    id_alb = int(id_album)
+    album = db.artistas.find_one(
+        {"albumes.id_album": id_alb},
+        {"albumes.$": 1}
+    )
+    if not album:
+        raise Exception("Álbum no encontrado")
+    album_info = album["albumes"][0]
+    artista = db.artistas.find_one({"albumes.id_album": id_alb}, {"nombre_artistico": 1})
+    db.usuarios.update_one(
+        {"id_usuario": id_usr, "albumes_guardados.id_album": {"$ne": id_alb}},
+        {"$push": {"albumes_guardados": {
+            "id_album": id_alb,
+            "titulo_album": album_info["titulo_album"],
+            "nombre_artistico": artista["nombre_artistico"],
+            "fecha_guardado": datetime.now()
+        }}}
+    )
+
+def quitar_album_guardado(id_usuario, id_album):
+    db = get_mongo_db()
+    id_usr = int(id_usuario)
+    id_alb = int(id_album)
+    db.usuarios.update_one(
+        {"id_usuario": id_usr},
+        {"$pull": {"albumes_guardados": {"id_album": id_alb}}}
+    )
+

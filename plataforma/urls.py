@@ -55,6 +55,8 @@ urlpatterns = [
     path('artista/<int:id_artista>/', views.detalle_artista, name='detalle_artista'),
 
     path('album/<int:id_album>/', views.detalle_album, name='detalle_album'),
+    path('album/<int:id_album>/guardar/', views.agregar_album_view, name='agregar_album_guardado'),
+    path('album/<int:id_album>/quitar/', views.quitar_album_view, name='quitar_album_guardado'),
 
     path('playlist/<int:id_playlist>/', views.detalle_playlist, name='detalle_playlist'),
 

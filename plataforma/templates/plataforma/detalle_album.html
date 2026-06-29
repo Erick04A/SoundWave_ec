@@ -64,8 +64,13 @@
 </div>
 
 <div style="margin-top: 2rem; margin-bottom: 2rem; display: flex; gap: 1rem;">
-    <a href="{% url 'catalogo' %}" class="btn btn-ghost" data-i18n="detail_album_back">Volver al catálogo</a>
-    <a href="{% url 'detalle_artista' id_artista=album.id_artista %}" class="btn btn-ghost" data-i18n="detail_album_see_artist">Ver Artista</a>
+    <a href="{% url 'catalogo' %}?id_usuario={{ id_usuario }}" class="btn btn-ghost" data-i18n="detail_album_back">Volver al catálogo</a>
+    <a href="{% url 'detalle_artista' id_artista=album.id_artista %}?id_usuario={{ id_usuario }}" class="btn btn-ghost" data-i18n="detail_album_see_artist">Ver Artista</a>
+    {% if ya_guardado %}
+        <a href="{% url 'quitar_album_guardado' id_album=album.id_album %}?id_usuario={{ id_usuario }}" class="btn btn-outline" style="border-color: #ff4d4d; color: #ff4d4d;">Quitar de mi biblioteca</a>
+    {% else %}
+        <a href="{% url 'agregar_album_guardado' id_album=album.id_album %}?id_usuario={{ id_usuario }}" class="btn btn-gold">Guardar álbum</a>
+    {% endif %}
 </div>
 
 {% endblock %}

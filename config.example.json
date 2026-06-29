@@ -1,0 +1,14 @@
+{
+  "mongodb": {
+    "usuario": "TU_USUARIO_MONGO_AQUI",
+    "contrasena": "TU_CONTRASENA_MONGO_AQUI",
+    "cluster": "TU_CLUSTER_MONGO_AQUI.mongodb.net",
+    "base_datos": "SoundWaveDB"
+  },
+  "app": {
+    "usuario_activo_id": 12,
+    "usuario_protegido_id": 12,
+    "debug": true,
+    "secret_key": "TU_SECRET_KEY_DJANGO_AQUI"
+  }
+}

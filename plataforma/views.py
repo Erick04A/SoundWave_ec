@@ -1,12 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
-import pyodbc
-from plataforma.db_utils import (
-    execute_scalar, execute_stored_procedure, get_db_connection, get_connection, 
-    get_catalogo_completo, get_historial_completo, 
-    get_suscripcion_data, close_connection, eliminar_usuario_bd
-)
+
 from plataforma.fase7_mongo_db_utils import (
     get_mongo_db,
     validar_credenciales_mongo,
@@ -23,7 +18,20 @@ from plataforma.fase7_mongo_db_utils import (
     get_detalle_artista_mongo,
     get_detalle_album_mongo,
     get_detalle_playlist_mongo,
-    generar_reporte_mongo
+    generar_reporte_mongo,
+    obtener_perfil_usuario_mongo,
+    eliminar_usuario_bd,
+    get_catalogo_completo,
+    registrar_reproduccion_mongo,
+    get_historial_completo,
+    get_administracion_data_mongo,
+    execute_scalar,
+    actualizar_usuario_sp,
+    get_suscripcion_data,
+    procesar_renovacion_mongo,
+    crear_usuario_sp,
+    agregar_album_guardado,
+    quitar_album_guardado
 )
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
@@ -33,18 +41,12 @@ from datetime import datetime, date
 
 def get_usuario_activo():
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM negocio.USUARIO WHERE id_usuario = 12")
-        exists = cursor.fetchone()[0]
-        if exists:
-            cursor.close()
+        if obtener_perfil_usuario_mongo(12):
             return 12
-        cursor.execute("SELECT TOP 1 id_usuario FROM negocio.USUARIO ORDER BY id_usuario")
-        row = cursor.fetchone()
-        cursor.close()
-        if row:
-            return row[0]
+        db = get_mongo_db()
+        first_user = db.usuarios.find_one(sort=[("id_usuario", 1)])
+        if first_user:
+            return first_user["id_usuario"]
     except Exception:
         pass
     return 12
@@ -145,113 +147,57 @@ def dashboard_usuario(request):
 
 def procesar_suscripcion(request):
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
-    id_suscripcion = 1
+    sub_data = get_suscripcion_data(id_usuario)
+    suscripcion = sub_data.get('sub_actual', {
+        'id_suscripcion': 1,
+        'tipo_plan': 'Gratuito',
+        'plan': 'Gratuito',
+        'fecha_fin': 'Indefinida',
+        'estado': 'Inactiva',
+        'plan_activo': 'Gratuito'
+    })
+    if 'plan' not in suscripcion:
+        suscripcion['plan'] = suscripcion.get('tipo_plan', 'Gratuito')
+    if 'plan_activo' not in suscripcion:
+        suscripcion['plan_activo'] = suscripcion.get('tipo_plan', 'Gratuito')
+    
+    id_suscripcion = suscripcion.get('id_suscripcion', 1)
     resultado_transaccion = None
     if request.method == 'POST':
-        metodo = request.POST.get('metodo_pago', 'Tarjeta Credito')
         estado_tx = request.POST.get('estado_transaccion')
         estado_pago = 'Completado' if estado_tx == 'Completado' else 'Fallido'
         try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute(
-                "EXEC negocio.sp_ProcesarRenovacion ?, ?",
-                [id_suscripcion, estado_pago]
-            )
-            conn.commit()
-            cursor.close()
-            close_connection()
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT tipo_plan, FORMAT(fecha_fin, 'dd/MM/yyyy'), estado FROM negocio.SUSCRIPCION WHERE id_suscripcion = ?", [id_suscripcion])
-            row_res = cursor.fetchone()
-            cursor.close()
-            close_connection()
-            if row_res:
-                resultado_transaccion = {
-                    'plan': row_res[0],
-                    'fecha_fin': row_res[1] if row_res[1] else 'Indefinida',
-                    'estado': row_res[2],
-                    'exito': estado_pago == 'Completado'
-                }
+            resultado_transaccion = procesar_renovacion_mongo(id_suscripcion, estado_pago)
+            if resultado_transaccion:
                 if estado_pago == 'Completado':
                     messages.success(request, f"¡Transacción exitosa! Tu suscripción Premium ha sido renovada hasta el {resultado_transaccion['fecha_fin']}.")
                 else:
                     messages.warning(request, "Transacción declinada. Tu suscripción se encuentra ahora en estado 'Vencida'.")
         except Exception as e:
             messages.error(request, f"Error al procesar renovación: {e}")
-        finally:
-            close_connection()
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT TOP 1 
-                s.id_suscripcion,
-                s.tipo_plan,
-                s.fecha_inicio,
-                s.fecha_fin,
-                s.estado,
-                dbo.fn_ObtenerPlanActivo(s.id_usuario) AS plan_activo
-            FROM negocio.SUSCRIPCION s
-            WHERE s.id_usuario = ?
-            ORDER BY s.fecha_inicio DESC
-        """, [id_usuario])
-        row = cursor.fetchone()
-        cursor.close()
-        close_connection()
-    except Exception as e:
-        row = None
-        print(f"Error al leer suscripción: {e}")
-    finally:
-        close_connection()
-    suscripcion = {}
-    if row:
-        suscripcion = {
-            'id_suscripcion': row[0],
-            'tipo_plan': row[1],
-            'plan': row[1],
-            'fecha_fin': row[3].strftime('%d/%m/%Y') if row[3] else 'Indefinida',
-            'estado': row[4],
-            'plan_activo': row[5]
-        }
-    else:
-        suscripcion = {
-            'id_suscripcion': 1,
-            'tipo_plan': 'Gratuito',
-            'plan': 'Gratuito',
-            'fecha_fin': 'Indefinida',
-            'estado': 'Inactiva',
-            'plan_activo': 'Gratuito'
-        }
-    player_info = {'cancion_actual': 'Shape of You', 'artista_actual': 'Ed Sheeran'}
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT TOP 1 C.titulo_cancion, A.nombre_artistico
-            FROM negocio.HISTORIAL_REPRODUCCION H
-            INNER JOIN catalogo.CANCION C ON H.id_cancion = C.id_cancion
-            INNER JOIN catalogo.ARTISTA A ON C.id_artista = A.id_artista
-            WHERE H.id_usuario = ?
-            ORDER BY H.fecha_hora DESC
-        """, [id_usuario])
-        row_player = cursor.fetchone()
-        cursor.close()
-        close_connection()
-        if row_player:
-            player_info = {'cancion_actual': row_player[0], 'artista_actual': row_player[1]}
-    except Exception:
-        pass
-    finally:
-        close_connection()
+            
+    sub_data_actualizada = get_suscripcion_data(id_usuario)
+    suscripcion_actualizada = sub_data_actualizada.get('sub_actual', suscripcion)
+    if 'plan' not in suscripcion_actualizada:
+        suscripcion_actualizada['plan'] = suscripcion_actualizada.get('tipo_plan', 'Gratuito')
+    if 'plan_activo' not in suscripcion_actualizada:
+        suscripcion_actualizada['plan_activo'] = suscripcion_actualizada.get('tipo_plan', 'Gratuito')
+    
+    if suscripcion_actualizada and 'fecha_fin' in suscripcion_actualizada:
+        ff = suscripcion_actualizada['fecha_fin']
+        if isinstance(ff, (datetime, date)):
+            suscripcion_actualizada['fecha_fin'] = ff.strftime('%d/%m/%Y')
+            
+    player_info = sub_data_actualizada.get('cancion_actual', {'cancion_actual': 'Shape of You', 'artista_actual': 'Ed Sheeran'})
+    plan_seleccionado = request.session.get('plan_seleccionado')
     contexto = {
         'id_usuario': id_usuario,
-        'suscripcion': suscripcion,
-        'sub_actual': suscripcion,
+        'suscripcion': suscripcion_actualizada,
+        'sub_actual': suscripcion_actualizada,
         'resultado_transaccion': resultado_transaccion,
-        'cancion_actual': player_info['cancion_actual'],
-        'artista_actual': player_info['artista_actual'],
+        'cancion_actual': player_info.get('cancion_actual', 'Shape of You'),
+        'artista_actual': player_info.get('artista_actual', 'Ed Sheeran'),
+        'plan_seleccionado': plan_seleccionado,
     }
     return render(request, 'plataforma/suscripcion.html', contexto)
 
@@ -278,8 +224,6 @@ def catalogo_artistas(request):
             lista_canciones.append(s)
     except Exception as e:
         print(f"Error al cargar catálogo completo: {e}")
-    finally:
-        close_connection()
     contexto = {
         'id_usuario': id_usuario,
         'artistas': lista_artistas,
@@ -296,23 +240,12 @@ def catalogo_artistas(request):
 def reproducir_cancion(request, id_cancion):
     id_usuario = get_usuario_activo()
     try:
-        query_cancion = """
-            SELECT C.titulo_cancion, A.nombre_artistico, C.duracion_seg
-            FROM catalogo.CANCION C
-            INNER JOIN catalogo.ARTISTA A ON C.id_artista = A.id_artista
-            WHERE C.id_cancion = ?
-        """
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query_cancion, [id_cancion])
-                row = cur.fetchone()
-                if not row:
-                    return JsonResponse({'success': False, 'error': 'Canción no encontrada'}, status=404)
-                titulo, artista, duracion = row[0], row[1], row[2]
-                cur.execute("EXEC negocio.sp_RegistrarReproduccion ?, ?, ?", [id_usuario, id_cancion, duracion])
-                conn.commit()
-                cur.execute("SELECT num_reproducciones FROM catalogo.CANCION WHERE id_cancion = ?", [id_cancion])
-                nuevas_reproducciones = cur.fetchone()[0]
+        db = get_mongo_db()
+        song = db.canciones.find_one({"id_cancion": int(id_cancion)})
+        if not song:
+            return JsonResponse({'success': False, 'error': 'Canción no encontrada'}, status=404)
+        duracion = song.get('duracion_seg', 0)
+        titulo, artista, nuevas_reproducciones = registrar_reproduccion_mongo(id_usuario, id_cancion, duracion)
         return JsonResponse({
             'success': True,
             'titulo': titulo,
@@ -321,8 +254,6 @@ def reproducir_cancion(request, id_cancion):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    finally:
-        close_connection()
 
 def historial_reproduccion(request):
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
@@ -344,8 +275,6 @@ def historial_reproduccion(request):
             reporte_datos.append(item)
     except Exception as e:
         messages.error(request, f"Error al cargar el historial de reproducciones: {e}")
-    finally:
-        close_connection()
     contexto = {
         'id_usuario': id_usuario,
         'reporte_datos': reporte_datos,
@@ -363,47 +292,14 @@ def exportar_historial_pdf(request):
     fecha_inicio = request.GET.get('fecha_inicio', '')
     fecha_fin = request.GET.get('fecha_fin', '')
     genero = request.GET.get('genero', '')
-    query = """
-        SELECT 
-            H.fecha_hora AS FechaHora,
-            C.titulo_cancion AS Cancion,
-            A.nombre_artistico AS Artista,
-            G.nombre_genero AS Genero,
-            H.duracion_escuchada AS Segundos
-        FROM negocio.HISTORIAL_REPRODUCCION H
-        INNER JOIN catalogo.CANCION C ON H.id_cancion = C.id_cancion
-        INNER JOIN catalogo.ARTISTA A ON C.id_artista = A.id_artista
-        INNER JOIN catalogo.CANCION_GENERO CG ON C.id_cancion = CG.id_cancion
-        INNER JOIN catalogo.GENERO G ON CG.id_genero = G.id_genero
-        WHERE H.id_usuario = ?
-    """
-    params = [id_usuario]
-    if fecha_inicio and fecha_fin:
-        query += " AND H.fecha_hora BETWEEN ? AND ?"
-        params.extend([fecha_inicio + " 00:00:00", fecha_fin + " 23:59:59"])
-    elif fecha_inicio:
-        query += " AND H.fecha_hora >= ?"
-        params.append(fecha_inicio + " 00:00:00")
-    elif fecha_fin:
-        query += " AND H.fecha_hora <= ?"
-        params.append(fecha_fin + " 23:59:59")
-    if genero:
-        query += " AND G.nombre_genero = ?"
-        params.append(genero)
-    query += " ORDER BY H.fecha_hora DESC"
     try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query, params)
-                cols = [col[0] for col in cur.description]
-                datos = [dict(zip(cols, row)) for row in cur.fetchall()]
-                cur.execute("SELECT nombre_usuario FROM negocio.USUARIO WHERE id_usuario = ?", [id_usuario])
-                user_row = cur.fetchone()
-                nombre_usuario = user_row[0] if user_row else f"Usuario #{id_usuario}"
+        db_data = get_historial_completo(id_usuario, fecha_inicio, fecha_fin, genero)
+        datos = db_data.get('reporte_datos', [])
+        user_profile = obtener_perfil_usuario_mongo(id_usuario)
+        nombre_usuario = user_profile.get('nombre_usuario') if user_profile else f"Usuario #{id_usuario}"
     except Exception as e:
-        return HttpResponse(f"Error de base de datos al generar PDF: {e}", status=500)
-    finally:
-        close_connection()
+        return HttpResponse(f"Error al generar PDF: {e}", status=500)
+    
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="historial_reproduccion_{id_usuario}.pdf"'
     doc = SimpleDocTemplate(response, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
@@ -457,11 +353,18 @@ def exportar_historial_pdf(request):
     ]]
     for row in datos:
         duracion_min = f"{row['Segundos'] // 60}:{row['Segundos'] % 60:02d}"
+        fh = row.get('FechaHora')
+        if isinstance(fh, (datetime, date)):
+            fh_str = fh.strftime('%d/%m/%Y %H:%M')
+        elif isinstance(fh, str):
+            fh_str = fh
+        else:
+            fh_str = ''
         table_data.append([
-            Paragraph(row['FechaHora'].strftime('%d/%m/%Y %H:%M') if row['FechaHora'] else '', normal_style),
-            Paragraph(row['Cancion'] or '', normal_style),
-            Paragraph(row['Artista'] or '', normal_style),
-            Paragraph(row['Genero'] or '', normal_style),
+            Paragraph(fh_str, normal_style),
+            Paragraph(row.get('Cancion') or '', normal_style),
+            Paragraph(row.get('Artista') or '', normal_style),
+            Paragraph(row.get('Genero') or '', normal_style),
             Paragraph(duracion_min, normal_style)
         ])
     t = Table(table_data, colWidths=[120, 140, 110, 80, 60])
@@ -481,71 +384,52 @@ def exportar_historial_pdf(request):
 
 def administracion(request):
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
-    player_info = {'cancion_actual': 'Shape of You', 'artista_actual': 'Ed Sheeran'}
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT TOP 1 C.titulo_cancion, A.nombre_artistico
-            FROM negocio.HISTORIAL_REPRODUCCION H
-            INNER JOIN catalogo.CANCION C ON H.id_cancion = C.id_cancion
-            INNER JOIN catalogo.ARTISTA A ON C.id_artista = A.id_artista
-            WHERE H.id_usuario = ?
-            ORDER BY H.fecha_hora DESC
-        """, [id_usuario])
-        row_player = cursor.fetchone()
-        cursor.close()
-        close_connection()
-        if row_player:
-            player_info = {'cancion_actual': row_player[0], 'artista_actual': row_player[1]}
+        admin_data = get_administracion_data_mongo(id_usuario)
+        oyentes = admin_data.get('oyentes', [])
+        artistas = admin_data.get('artistas', [])
+        sistema_stats = admin_data.get('sistema_stats', {})
+        player_info = admin_data.get('player_info', {'cancion_actual': 'Shape of You', 'artista_actual': 'Ed Sheeran'})
+    except Exception as e:
+        oyentes, artistas, sistema_stats = [], [], {}
+        player_info = {'cancion_actual': 'Shape of You', 'artista_actual': 'Ed Sheeran'}
+    try:
+        db = get_mongo_db()
+        canciones_cursor = db.canciones.find({"id_cancion": {"$exists": True}}).sort("id_cancion", 1)
+        canciones = []
+        for c in canciones_cursor:
+            minutos = c.get('duracion_seg', 0) // 60
+            segundos = c.get('duracion_seg', 0) % 60
+            gens = c.get('generos', [])
+            canciones.append({
+                'id_cancion': c.get('id_cancion'),
+                'titulo_cancion': c.get('titulo_cancion'),
+                'titulo_album': c.get('album', {}).get('titulo_album', ''),
+                'id_album': c.get('album', {}).get('id_album', 0),
+                'nombre_artistico': c.get('artista', {}).get('nombre_artistico', ''),
+                'duracion_seg': c.get('duracion_seg', 0),
+                'duracion_formateada': f"{minutos}:{segundos:02d}",
+                'num_reproducciones': c.get('num_reproducciones', 0),
+                'genero': gens[0] if gens else ''
+            })
+        artistas_cursor = list(db.artistas.find({"id_artista": {"$exists": True}}).sort("nombre_artistico", 1))
+        albumes = []
+        for a in artistas_cursor:
+            for alb in a.get('albumes', []):
+                albumes.append({
+                    'id_album': alb.get('id_album'),
+                    'titulo_album': alb.get('titulo_album'),
+                    'nombre_artistico': a.get('nombre_artistico'),
+                    'id_artista': a.get('id_artista'),
+                    'fecha_lanzamiento': alb.get('fecha_lanzamiento'),
+                    'descripcion': alb.get('descripcion'),
+                    'total_canciones': len(alb.get('canciones', []))
+                })
+        albumes = sorted(albumes, key=lambda x: x['id_album'])
+        artistas_list = [{'id_artista': a['id_artista'], 'nombre_artistico': a['nombre_artistico']} for a in artistas_cursor]
+        albumes_list = [{'id_album': al['id_album'], 'titulo_album': al['titulo_album']} for al in albumes]
     except Exception:
-        pass
-    finally:
-        close_connection()
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT u.id_usuario, u.nombre_usuario, u.email_usuario,
-               u.estado, r.nombre_rol,
-               dbo.fn_ObtenerPlanActivo(u.id_usuario) AS plan_activo,
-               FORMAT(u.fecha_registro, 'dd/MM/yyyy') AS fecha_registro
-        FROM negocio.USUARIO u
-        JOIN negocio.ROL r ON u.id_rol = r.id_rol
-        WHERE r.nombre_rol IN ('Oyente', 'Premium')
-        ORDER BY u.id_usuario DESC
-    """)
-    cols = [col[0] for col in cursor.description]
-    oyentes = [dict(zip(cols, r)) for r in cursor.fetchall()]
-    cursor.execute("""
-        SELECT 
-            u.id_usuario, u.nombre_usuario, u.email_usuario,
-            u.estado, FORMAT(u.fecha_registro, 'dd/MM/yyyy') AS fecha_registro,
-            ar.nombre_artistico, ar.pais,
-            (SELECT COUNT(*) FROM catalogo.ALBUM al WHERE al.id_artista = ar.id_artista) AS total_albumes,
-            (SELECT COUNT(*) FROM catalogo.CANCION c WHERE c.id_artista = ar.id_artista) AS total_canciones,
-            (SELECT ISNULL(SUM(c2.num_reproducciones),0) FROM catalogo.CANCION c2 WHERE c2.id_artista = ar.id_artista) AS total_reproducciones
-        FROM negocio.USUARIO u
-        JOIN negocio.ROL r ON u.id_rol = r.id_rol
-        JOIN catalogo.ARTISTA ar ON ar.id_usuario = u.id_usuario
-        WHERE r.nombre_rol = 'Artista'
-        ORDER BY total_reproducciones DESC
-    """)
-    cols2 = [col[0] for col in cursor.description]
-    artistas = [dict(zip(cols2, r)) for r in cursor.fetchall()]
-    cursor.execute("""
-        SELECT
-            (SELECT COUNT(*) FROM negocio.USUARIO) AS total_usuarios,
-            (SELECT COUNT(*) FROM catalogo.CANCION) AS total_canciones,
-            (SELECT COUNT(*) FROM catalogo.ALBUM) AS total_albumes,
-            (SELECT COUNT(*) FROM negocio.HISTORIAL_REPRODUCCION) AS total_reproducciones,
-            (SELECT COUNT(*) FROM negocio.SUSCRIPCION WHERE estado='Activa') AS suscripciones_activas,
-            (SELECT ISNULL(SUM(monto_calculado),0) FROM negocio.REGALIAS) AS total_regalias
-    """)
-    row = cursor.fetchone()
-    cols3 = [col[0] for col in cursor.description]
-    sistema_stats = dict(zip(cols3, row))
-    cursor.close()
-    close_connection()
+        canciones, albumes, artistas_list, albumes_list = [], [], [], []
     contexto = {
         'id_usuario': id_usuario,
         'oyentes': oyentes,
@@ -553,6 +437,10 @@ def administracion(request):
         'sistema_stats': sistema_stats,
         'cancion_actual': player_info['cancion_actual'],
         'artista_actual': player_info['artista_actual'],
+        'albumes': albumes,
+        'canciones': canciones,
+        'artistas_list': artistas_list,
+        'albumes_list': albumes_list
     }
     return render(request, 'plataforma/administracion.html', contexto)
 
@@ -561,7 +449,6 @@ def crear_oyente(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre_usuario', '').strip()
         email = request.POST.get('email_usuario', '').strip()
-        pais = request.POST.get('pais', '').strip()
         plan = request.POST.get('plan', 'Gratuito')
         estado = 'Activo'
         email_exists = execute_scalar("SELECT COUNT(*) FROM negocio.USUARIO WHERE email_usuario = ?", [email])
@@ -569,29 +456,12 @@ def crear_oyente(request):
             messages.error(request, f"Error: El correo electrónico '{email}' ya se encuentra registrado.")
             return redirect(f'/administracion/?id_usuario={id_usuario}')
         try:
-            conn = get_connection()
-            cursor = conn.cursor()
             id_rol = 4 if plan == 'Premium' else 3
-            cursor.execute("""
-                INSERT INTO negocio.USUARIO 
-                    (id_rol, nombre_usuario, email_usuario, contrasena, pais, fecha_registro, estado)
-                VALUES (?, ?, ?, ?, ?, GETDATE(), ?)
-            """, id_rol, nombre, email, f'hash_{nombre.lower().replace(" ","")}', pais or None, estado)
-            if plan == 'Premium':
-                cursor.execute("SELECT @@IDENTITY")
-                nuevo_id = cursor.fetchone()[0]
-                cursor.execute("""
-                    INSERT INTO negocio.SUSCRIPCION (id_usuario, tipo_plan, fecha_inicio, fecha_fin, estado)
-                    VALUES (?, 'Premium', GETDATE(), DATEADD(YEAR, 1, GETDATE()), 'Activa')
-                """, nuevo_id)
-            conn.commit()
-            cursor.close()
-            close_connection()
+            contrasena = f'hash_{nombre.lower().replace(" ", "")}'
+            crear_usuario_sp(id_rol, nombre, email, contrasena, estado, tipo_plan=plan)
             messages.success(request, f'Oyente {nombre} registrado correctamente.')
         except Exception as e:
             messages.error(request, f'Error al registrar: {e}')
-        finally:
-            close_connection()
     return redirect(f'/administracion/?id_usuario={id_usuario}')
 
 def editar_oyente(request, id_usuario):
@@ -605,21 +475,10 @@ def editar_oyente(request, id_usuario):
             messages.error(request, f"Error al editar perfil: El correo electrónico '{email}' ya está en uso por otro usuario.")
             return redirect(f'/administracion/?id_usuario={id_activo}')
         try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE negocio.USUARIO 
-                SET nombre_usuario=?, email_usuario=?, estado=?
-                WHERE id_usuario=?
-            """, nombre, email, estado, id_usuario)
-            conn.commit()
-            cursor.close()
-            close_connection()
+            actualizar_usuario_sp(id_usuario, nombre, email, estado)
             messages.success(request, 'Usuario actualizado correctamente.')
         except Exception as e:
             messages.error(request, f'Error al actualizar: {e}')
-        finally:
-            close_connection()
     return redirect(f'/administracion/?id_usuario={id_activo}')
 
 def eliminar_oyente(request, id_usuario):
@@ -905,12 +764,19 @@ def detalle_album(request, id_album):
     res = get_detalle_album_mongo(id_album, id_usuario)
     if not res:
         return redirect('dashboard')
+    
+    # Check if album is saved
+    db = get_mongo_db()
+    user = db.usuarios.find_one({"id_usuario": id_usuario, "albumes_guardados.id_album": int(id_album)})
+    ya_guardado = user is not None
+
     contexto = {
         'id_usuario': id_usuario,
         'album': res['album'],
         'canciones': res['canciones'],
         'cancion_actual': res['player_info']['cancion_actual'],
-        'artista_actual': res['player_info']['artista_actual']
+        'artista_actual': res['player_info']['artista_actual'],
+        'ya_guardado': ya_guardado,
     }
     return render(request, 'plataforma/detalle_album.html', contexto)
 
@@ -1157,3 +1023,22 @@ def reportes(request):
     contexto['cancion_actual'] = cancion_actual
     contexto['artista_actual'] = artista_actual
     return render(request, 'plataforma/reportes.html', contexto)
+
+def agregar_album_view(request, id_album):
+    id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
+    try:
+        agregar_album_guardado(id_usuario, id_album)
+        messages.success(request, 'Álbum guardado en tu biblioteca con éxito.')
+    except Exception as e:
+        messages.error(request, f'Error al guardar álbum: {e}')
+    return redirect(f'/album/{id_album}/?id_usuario={id_usuario}')
+
+def quitar_album_view(request, id_album):
+    id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
+    try:
+        quitar_album_guardado(id_usuario, id_album)
+        messages.success(request, 'Álbum quitado de tu biblioteca con éxito.')
+    except Exception as e:
+        messages.error(request, f'Error al quitar álbum: {e}')
+    return redirect(f'/album/{id_album}/?id_usuario={id_usuario}')
+
