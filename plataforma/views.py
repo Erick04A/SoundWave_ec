@@ -95,6 +95,9 @@ def eliminar_usuario(request):
     return redirect('dashboard')
 
 def dashboard_usuario(request):
+    rol_actual = request.session.get('rol')
+    if rol_actual == 'Administrador':
+        return administracion(request)
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
     try:
         db_data = get_dashboard_data(id_usuario)
@@ -405,6 +408,9 @@ def exportar_historial_pdf(request):
     return response
 
 def administracion(request):
+    if request.session.get('rol') != 'Administrador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('dashboard')
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
     try:
         admin_data = get_administracion_data_mongo(id_usuario)
