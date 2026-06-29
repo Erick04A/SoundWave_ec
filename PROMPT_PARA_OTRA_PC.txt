@@ -1,0 +1,3 @@
+Clona este repositorio y levanta el proyecto siguiendo exactamente las instrucciones del archivo SETUP_RAPIDO.md que está en la raíz del repo: https://github.com/Erick04A/SoundWave.git
+
+Ejecuta cada paso del archivo en orden exacto, sin omitir ninguno. Si algún paso falla, muestra el error completo de la terminal antes de intentar nada distinto a lo que dice la guía. No modifiques ningún archivo del proyecto salvo config.json, donde debes reemplazar únicamente los valores de usuario y contraseña de MongoDB que te compartirá la persona que te dio este prompt. Al final confirma que el servidor está corriendo y que http://127.0.0.1:8000 carga el Dashboard con datos reales.
