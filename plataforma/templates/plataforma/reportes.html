@@ -42,6 +42,7 @@
         </div>
     </div>
 
+    {% if es_admin %}
     <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
         <div>
             <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 3</span>
@@ -64,7 +65,7 @@
                 <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep4_title">Ingresos y Regalías por Artista</h3>
                 
                 <div class="form-group" style="margin-bottom: 1.2rem;">
-                    <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep4_select_artist">Seleccionar Artista</label>
+                     <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep4_select_artist">Seleccionar Artista</label>
                     <div class="select-custom">
                         <select name="artista_id" required style="width: 100%; font-size: 0.85rem;">
                             <option value="" data-i18n="rep4_select_option">-- Seleccione un Artista --</option>
@@ -82,14 +83,19 @@
             </div>
         </form>
     </div>
+    {% endif %}
 
     <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
         <form method="GET" action="" style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
             <input type="hidden" name="report_id" value="5">
+            {% if not es_admin %}
+                <input type="hidden" name="usuario_id" value="{{ id_usuario_actual }}">
+            {% endif %}
             <div>
                 <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 5</span>
-                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep5_title">Historial de Reproducción por Usuario</h3>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;">Historial de Reproducción {% if es_admin %}por Usuario{% else %}Personal{% endif %}</h3>
                 
+                {% if es_admin %}
                 <div class="form-group" style="margin-bottom: 0.8rem;">
                     <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep5_select_user">Seleccionar Oyente</label>
                     <div class="select-custom">
@@ -101,6 +107,9 @@
                         </select>
                     </div>
                 </div>
+                {% else %}
+                <p style="font-size: 0.85rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;">Tu historial completo de reproducciones en SoundWave.</p>
+                {% endif %}
                 
                 <div style="display: flex; gap: 0.8rem;">
                     <div class="form-group" style="flex: 1; margin-bottom: 1.2rem;">
@@ -124,10 +133,14 @@
     <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--gold);">
         <form method="GET" action="" style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
             <input type="hidden" name="report_id" value="6">
+            {% if not es_admin %}
+                <input type="hidden" name="usuario_id" value="{{ id_usuario_actual }}">
+            {% endif %}
             <div>
                 <span style="font-size: 0.75rem; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Reporte 6</span>
-                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;" data-i18n="rep6_title">Álbumes Guardados por Usuario</h3>
+                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 0.8rem;">Álbumes Guardados {% if es_admin %}por Usuario{% else %}— Mi Biblioteca{% endif %}</h3>
                 
+                {% if es_admin %}
                 <div class="form-group" style="margin-bottom: 1.2rem;">
                     <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.4rem;" data-i18n="rep6_select_user">Seleccionar Oyente</label>
                     <div class="select-custom">
@@ -139,6 +152,9 @@
                         </select>
                     </div>
                 </div>
+                {% else %}
+                <p style="font-size: 0.85rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 1.2rem;">Tus álbumes guardados en tu biblioteca personal.</p>
+                {% endif %}
             </div>
             
             <div style="display: flex; gap: 0.8rem; margin-top: auto;">

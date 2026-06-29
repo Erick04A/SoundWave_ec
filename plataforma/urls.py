@@ -15,6 +15,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
 
     path('suscripcion/', views.procesar_suscripcion, name='suscripcion'),
+    path('suscripcion/cancelar/', views.cancelar_suscripcion_propia, name='cancelar_suscripcion_propia'),
 
     path('catalogo/', views.catalogo_artistas, name='catalogo'),
 

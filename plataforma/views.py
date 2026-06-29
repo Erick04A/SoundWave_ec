@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 
 from plataforma.fase7_mongo_db_utils import (
     get_mongo_db,
@@ -226,6 +226,27 @@ def procesar_suscripcion(request):
     }
     return render(request, 'plataforma/suscripcion.html', contexto)
 
+def cancelar_suscripcion_propia(request):
+    if request.method == 'POST':
+        id_usuario = request.session.get('id_usuario')
+        if not id_usuario:
+            id_usuario = get_usuario_activo()
+        db = get_mongo_db()
+        db.usuarios.update_one(
+            {"id_usuario": id_usuario},
+            {"$set": {
+                "suscripcion_activa.tipo_plan": "Gratuito",
+                "suscripcion_activa.estado": "Cancelada"
+            }}
+        )
+        db.suscripciones.update_one(
+            {"usuario.id_usuario": id_usuario},
+            {"$set": {"estado": "Cancelada", "tipo_plan": "Gratuito"}}
+        )
+        request.session['plan'] = 'Gratuito'
+        messages.success(request, 'Tu suscripción ha sido cancelada. Ahora tienes el plan Gratuito.')
+    return redirect('suscripcion')
+
 def catalogo_artistas(request):
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
     filtro_artista = request.GET.get('filtro_artista', '').strip()
@@ -281,7 +302,11 @@ def reproducir_cancion(request, id_cancion):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 def historial_reproduccion(request):
+    rol_actual = request.session.get('rol')
+    id_usuario_sesion = request.session.get('id_usuario')
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
+    if rol_actual != 'Administrador' and int(id_usuario) != int(id_usuario_sesion):
+        return HttpResponseForbidden("No tienes permiso para ver el historial de otro usuario.")
     fecha_inicio = request.GET.get('fecha_inicio', '')
     fecha_fin = request.GET.get('fecha_fin', '')
     genero = request.GET.get('genero', '')
@@ -313,7 +338,11 @@ def historial_reproduccion(request):
     return render(request, 'plataforma/historial.html', contexto)
 
 def exportar_historial_pdf(request):
+    rol_actual = request.session.get('rol')
+    id_usuario_sesion = request.session.get('id_usuario')
     id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
+    if rol_actual != 'Administrador' and int(id_usuario) != int(id_usuario_sesion):
+        return HttpResponseForbidden("No tienes permiso para ver el historial de otro usuario.")
     fecha_inicio = request.GET.get('fecha_inicio', '')
     fecha_fin = request.GET.get('fecha_fin', '')
     genero = request.GET.get('genero', '')
@@ -877,40 +906,68 @@ def verificar_admin(request):
     return redirect(f'/administracion/?id_usuario={id_usuario}')
 
 def reportes(request):
+    rol_actual = request.session.get('rol')
+    id_usuario_actual = request.session.get('id_usuario')
+    es_admin = (rol_actual == 'Administrador')
+    
     db = get_mongo_db()
     artistas_list = []
-    for art in db.artistas.find({"estado": "Activo"}).sort("nombre_artistico", 1):
-        artistas_list.append({
-            'id': art.get('id_artista'),
-            'nombre': art.get('nombre_artistico')
-        })
     usuarios_list = []
-    for usr in db.usuarios.find({"estado": "Activo"}).sort("nombre_usuario", 1):
-        usuarios_list.append({
-            'id': usr.get('id_usuario'),
-            'nombre': usr.get('nombre_usuario')
-        })
+    
+    if es_admin:
+        for art in db.artistas.find({"estado": "Activo"}).sort("nombre_artistico", 1):
+            artistas_list.append({
+                'id': art.get('id_artista'),
+                'nombre': art.get('nombre_artistico')
+            })
+        for usr in db.usuarios.find({"estado": "Activo"}).sort("nombre_usuario", 1):
+            usuarios_list.append({
+                'id': usr.get('id_usuario'),
+                'nombre': usr.get('nombre_usuario')
+            })
+            
     report_id = request.GET.get('report_id')
     export = request.GET.get('export')
+    
+    # Resolve parameters
+    param_art = request.GET.get('artista_id')
+    param_usr = request.GET.get('usuario_id')
+    f_inicio = request.GET.get('fecha_inicio')
+    f_fin = request.GET.get('fecha_fin')
+    
+    error_msg = None
+    
+    # Access and Security Control:
+    if report_id:
+        # Report 3 & 4 (and resumo_financiero or usuario_completo) are Admin-only
+        if report_id in ['3', '4', 'usuario_completo', 'resumen_financiero']:
+            if not es_admin:
+                return HttpResponseForbidden("No tienes permiso para acceder a este reporte administrativo.")
+        # Report 5 & 6 are self-only for non-admins
+        elif report_id in ['5', '6']:
+            if not es_admin:
+                # Force user id to be the session user id
+                param_usr = str(id_usuario_actual)
+            elif not param_usr:
+                error_msg = "Debe seleccionar un usuario."
+                
     contexto = {
+        'es_admin': es_admin,
+        'id_usuario_actual': id_usuario_actual,
         'artistas_list': artistas_list,
         'usuarios_list': usuarios_list,
         'report_id': report_id,
-        'param_artista': int(request.GET.get('artista_id')) if request.GET.get('artista_id') else None,
-        'param_usuario': int(request.GET.get('usuario_id')) if request.GET.get('usuario_id') else None,
-        'param_fecha_inicio': request.GET.get('fecha_inicio'),
-        'param_fecha_fin': request.GET.get('fecha_fin'),
-        'error_msg': None,
+        'param_artista': int(param_art) if param_art else None,
+        'param_usuario': int(param_usr) if param_usr else None,
+        'param_fecha_inicio': f_inicio,
+        'param_fecha_fin': f_fin,
+        'error_msg': error_msg,
         'report_title': "",
         'cols': [],
         'rows': []
     }
-    if report_id:
+    if report_id and not error_msg:
         try:
-            param_art = request.GET.get('artista_id')
-            param_usr = request.GET.get('usuario_id')
-            f_inicio = request.GET.get('fecha_inicio')
-            f_fin = request.GET.get('fecha_fin')
             if report_id == 'usuario_completo':
                 title = "Reporte Completo de Usuarios"
                 cols = ["ID Usuario", "Nombre", "Email", "Rol", "Estado", "Plan Activo"]

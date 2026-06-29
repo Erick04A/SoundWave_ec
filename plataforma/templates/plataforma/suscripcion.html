@@ -56,6 +56,15 @@
             </div>
         </div>
     </div>
+    {% if sub_actual.plan != 'Gratuito' and sub_actual.estado == 'Activa' %}
+    <form method="post" action="/suscripcion/cancelar/" style="margin-top: 1.5rem; text-align: center;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost" style="border-color: #dc3545; color: #dc3545; font-size: 0.85rem; padding: 0.5rem 1rem;" 
+                onclick="return confirm('¿Seguro que deseas cancelar tu suscripción Premium?')">
+            CANCELAR SUSCRIPCIÓN PREMIUM
+        </button>
+    </form>
+    {% endif %}
 </div>
 
 <div class="subscription-card">
