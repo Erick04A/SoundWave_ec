@@ -40,6 +40,28 @@ from reportlab.lib import colors
 from datetime import datetime, date
 
 def get_usuario_activo():
+    import inspect
+    request = None
+    for f in inspect.stack():
+        frame_locals = f.frame.f_locals
+        if 'request' in frame_locals:
+            request = frame_locals['request']
+            break
+        if 'req' in frame_locals:
+            request = frame_locals['req']
+            break
+            
+    if request:
+        val = request.GET.get('id_usuario')
+        if val:
+            try:
+                return int(val)
+            except (ValueError, TypeError):
+                pass
+        val_sess = request.session.get('id_usuario')
+        if val_sess:
+            return int(val_sess)
+
     try:
         if obtener_perfil_usuario_mongo(12):
             return 12
@@ -513,6 +535,9 @@ def login_view(request):
             request.session['nombre_usuario'] = res['nombre_usuario']
             request.session['rol'] = res['rol']
             request.session['plan'] = res['plan']
+            if res.get('rol') == 'Administrador':
+                request.session['modo_desarrollador_activo'] = True
+                request.session['modo_desarrollador'] = True
             return redirect('dashboard')
         else:
             error = "Credenciales incorrectas o usuario inactivo."

@@ -158,6 +158,9 @@ window.createRipple = function(btn, e) {
     <a href="{% url 'reportes' %}" class="nav-item {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}" data-i18n="nav_reportes">Reportes</a>
     <a href="{% url 'soporte' %}" class="nav-item {% if request.resolver_match.url_name == 'soporte' %}active{% endif %}" data-i18n="nav_soporte">Soporte</a>
     <a href="{% url 'planes' %}" class="nav-item {% if request.resolver_match.url_name == 'planes' %}active{% endif %}" data-i18n="nav_planes">Planes</a>
+    {% if request.session.rol == 'Administrador' %}
+    <a href="{% url 'administracion' %}" class="nav-item {% if request.resolver_match.url_name == 'administracion' %}active{% endif %}" data-i18n="nav_administracion" style="color: var(--gold); border-left-color: var(--gold); font-weight: 600;">Administración</a>
+    {% endif %}
 
     {% if active_user_name %}
     <div class="nav-divider" style="border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0 0.5rem 0;"></div>
