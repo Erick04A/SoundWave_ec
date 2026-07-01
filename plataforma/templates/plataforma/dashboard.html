@@ -103,9 +103,21 @@
     <div class="rec-grid">
         {% for rec in recomendaciones %}
         <div class="rec-card">
-            <p class="rec-title">{{ rec.Cancion }}</p>
-            <p class="rec-artist">{{ rec.Artista }}</p>
-            <span class="rec-tag" data-i18n="dashboard_col_genre">{{ rec.Genero }}</span>
+            <div class="rec-portada-wrapper">
+                <img src="{{ rec.album.portada_url|default:'' }}"
+                     alt="{{ rec.Cancion }}"
+                     class="rec-portada"
+                     onerror="this.src='https://ui-avatars.com/api/?name={{ rec.Cancion|first }}&size=200&background=2a2a2a&color=c9a84c&bold=true&font-size=0.5'"
+                >
+                <div class="rec-overlay">
+                    <button class="rec-play-btn">▶</button>
+                </div>
+            </div>
+            <div class="rec-info">
+                <p class="rec-titulo">{{ rec.Cancion }}</p>
+                <p class="rec-artista">{{ rec.Artista }}</p>
+                <span class="rec-tag">{{ rec.Genero }}</span>
+            </div>
         </div>
         {% endfor %}
     </div>

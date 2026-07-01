@@ -24,6 +24,41 @@
   <script src="{% static 'plataforma/js/i18n.js' %}"></script>
 
   <style>
+    /* Override sidebar layout padding and logo margins for maximum horizontal width and compactness */
+    .sidebar {
+        padding: 1.2rem 0.6rem !important; /* Move logo up, expand content horizontally */
+    }
+    .sidebar-logo {
+        margin-bottom: 0.8rem !important;
+        display: flex;
+        justify-content: center;
+    }
+    .sidebar-logo-img {
+        width: 110px !important;
+        height: 110px !important;
+        margin: 0 auto !important;
+    }
+    .sidebar-nav {
+        gap: 0.25rem !important;
+    }
+    /* Maximize horizontal size of player and user dropdown */
+    .sidebar-player {
+        margin: 0.5rem 0.1rem !important;
+        padding: 1rem 0.6rem !important;
+        width: calc(100% - 0.2rem) !important;
+        box-sizing: border-box;
+    }
+    .sidebar-user-dropdown-container {
+        margin: 0.25rem 0.1rem 0.5rem 0.1rem !important;
+        width: calc(100% - 0.2rem) !important;
+        box-sizing: border-box;
+    }
+    .sidebar-user-block {
+        padding: 0.5rem 0.4rem !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+    
     @keyframes progress-dummy {
         0% { transform: scaleX(0.10); }
         50% { transform: scaleX(0.85); }
@@ -148,7 +183,6 @@ window.createRipple = function(btn, e) {
 <aside class="sidebar">
   <div class="sidebar-logo">
     <img src="{% static 'plataforma/img/logo.png' %}?v=2.0" alt="SoundWave" class="sidebar-logo-img" loading="eager">
-    <span>Plataforma Musical</span>
   </div>
   <nav class="sidebar-nav">
     <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" data-i18n="nav_inicio">Inicio</a>
@@ -158,67 +192,117 @@ window.createRipple = function(btn, e) {
     <a href="{% url 'suscripcion' %}" class="nav-item {% if request.resolver_match.url_name == 'suscripcion' %}active{% endif %}" data-i18n="nav_suscripcion">Suscripción</a>
     {% endif %}
     <a href="{% url 'reportes' %}" class="nav-item {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}" data-i18n="nav_reportes">Reportes</a>
-    <a href="{% url 'soporte' %}" class="nav-item {% if request.resolver_match.url_name == 'soporte' %}active{% endif %}" data-i18n="nav_soporte">Soporte</a>
-    <a href="{% url 'planes' %}" class="nav-item {% if request.resolver_match.url_name == 'planes' %}active{% endif %}" data-i18n="nav_planes">Planes</a>
-
-    {% if active_user_name %}
-    <div class="nav-divider" style="border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0 0.5rem 0;"></div>
-    <div class="sidebar-user-dropdown-container" id="user-dropdown-container">
-      <div class="sidebar-user-block" id="user-block-toggle">
-        <div class="sidebar-user-avatar-container">
-          <img src="{{ active_user_avatar }}" alt="{{ active_user_name }}" class="sidebar-user-avatar" width="36" height="36">
-          {% if active_user_plan == 'Premium' %}<div class="avatar-premium-ring"></div>{% endif %}
-        </div>
-        <div class="sidebar-user-info-col">
-          <span class="sidebar-user-name">{{ active_user_name }}</span>
-          <span class="sidebar-user-plan"><span data-i18n="sidebar_user_plan_label">Plan: </span><span data-i18n="user_plan_{{ active_user_plan|lower }}">{{ active_user_plan }}</span></span>
-        </div>
-        <svg class="sidebar-user-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-        </svg>
-      </div>
-      <div class="sidebar-user-dropdown" id="user-profile-dropdown">
-        <div class="dropdown-info-email">{{ active_user_email }}</div>
-        <div class="dropdown-divider"></div>
-        <a href="/ajustes/" class="dropdown-item">
-          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span data-i18n="dropdown_ajustes">Ajustes</span>
-        </a>
-        <div class="dropdown-item" id="lang-menu-btn">
-          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-          <span data-i18n="dropdown_idioma">Idioma</span>
-        </div>
-        <a href="{% url 'soporte' %}" class="dropdown-item">
-          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span data-i18n="dropdown_ayuda">Obtener ayuda</span>
-        </a>
-        <a href="{% url 'planes' %}" class="dropdown-item">
-          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-          <span data-i18n="dropdown_planes">Planes</span>
-        </a>
-        <a href="{% url 'suscripcion' %}" class="dropdown-item">
-          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-          <span data-i18n="dropdown_suscripcion">Suscripción</span>
-        </a>
-        <a href="/informacion/" class="dropdown-item">
-          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span data-i18n="dropdown_info">Más información</span>
-        </a>
-        <div class="dropdown-divider"></div>
-        <a href="{% url 'logout' %}" class="dropdown-item dropdown-item-danger">
-          <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-          <span data-i18n="dropdown_cerrar_sesion">Cerrar sesión</span>
-        </a>
-      </div>
-
-    </div>
-    {% endif %}
   </nav>
-  <div class="sidebar-player">
-    <div class="player-track">{{ cancion_actual|default:"Shape of You" }}</div>
-    <div class="player-artist">{{ artista_actual|default:"Ed Sheeran" }}</div>
-    <div class="player-bar"><div class="player-progress-active"></div></div>
+
+  <!-- Penúltimo: Sistema de Reproductor -->
+  <div class="sidebar-player" style="display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem; background: rgba(36,32,28,0.95); border: 1px solid var(--ink-2); border-radius: 12px; margin: 1rem 0.75rem 0.5rem 0.75rem; position: relative;">
+    <!-- Fila Superior: Portada + Info + Corazón -->
+    <div style="display: flex; gap: 0.8rem; align-items: center;">
+      <!-- Portada Miniatura -->
+      <img id="sidebar-player-cover" src="/static/plataforma/img/albumes/default.jpg" alt="Portada" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid var(--gold); background: var(--ink-2);"
+           onerror="this.src='https://ui-avatars.com/api/?name=Music&background=1a1a1a&color=c9a84c&bold=true'">
+      
+      <!-- Info de Canción -->
+      <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-width: 0;">
+        <div class="player-track" style="font-size: 0.9rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ cancion_actual|default:"Shape of You" }}</div>
+        <div class="player-artist" style="font-size: 0.75rem; color: var(--cream-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ artista_actual|default:"Ed Sheeran" }}</div>
+      </div>
+      
+      <!-- Corazón Favoritos -->
+      <button id="player-fav-btn" style="background: none; border: none; color: var(--gold); font-size: 1.25rem; cursor: pointer; padding: 0.1rem; transition: transform 0.2s;" onclick="toggleFavorite()">
+        ♡
+      </button>
+    </div>
+
+    <!-- Fila Central: Barra de Progreso y Tiempo -->
+    <div style="display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.1rem;">
+      <div class="player-bar-container" style="width: 100%; height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; cursor: pointer; position: relative;" id="player-timeline" onclick="seekTimeline(event)">
+        <div id="player-progress-bar" style="width: 15%; height: 100%; background: linear-gradient(90deg, var(--crimson), var(--gold)); border-radius: 3px; transition: width 0.1s linear;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--cream-3);">
+        <span id="player-time-current">0:00</span>
+        <span id="player-time-total">3:35</span>
+      </div>
+    </div>
+
+    <!-- Fila Inferior: Controles de Reproducción y Volumen -->
+    <div style="display: flex; flex-direction: column; gap: 0.6rem; align-items: center; margin-top: 0.1rem;">
+      <!-- Botones de Control -->
+      <div style="display: flex; gap: 1.2rem; align-items: center; justify-content: center;">
+        <!-- Retroceder -->
+        <button id="player-prev-btn" style="background: none; border: none; color: var(--cream); font-size: 1.2rem; cursor: pointer; transition: color 0.2s;" onclick="playPrev()" title="Anterior">
+          ⏮
+        </button>
+        <!-- Play / Pause -->
+        <button id="player-play-btn" style="background: var(--gold); border: none; color: var(--ink); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s;" onclick="togglePlay()" title="Reproducir / Pausar">
+          ▶
+        </button>
+        <!-- Adelantar -->
+        <button id="player-next-btn" style="background: none; border: none; color: var(--cream); font-size: 1.2rem; cursor: pointer; transition: color 0.2s;" onclick="playNext()" title="Siguiente">
+          ⏭
+        </button>
+      </div>
+
+      <!-- Control de Volumen -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%; justify-content: center;">
+        <span style="font-size: 0.85rem; color: var(--cream-3); cursor: pointer;" onclick="toggleMute()" id="player-volume-icon">🔊</span>
+        <input type="range" id="player-volume-slider" min="0" max="100" value="80" style="width: 70px; height: 4px; background: rgba(255,255,255,0.25); border-radius: 2px; outline: none; -webkit-appearance: none; cursor: pointer; margin: 0;" oninput="updateVolume(this.value)">
+      </div>
+    </div>
   </div>
+
+  <!-- Último: Información de Usuario y Desplegable -->
+  {% if active_user_name %}
+  <div class="nav-divider" style="border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0.75rem;"></div>
+  <div class="sidebar-user-dropdown-container" id="user-dropdown-container" style="margin: 0.25rem 0.75rem 1.5rem 0.75rem;">
+    <div class="sidebar-user-block" id="user-block-toggle">
+      <div class="sidebar-user-avatar-container">
+        <img src="{{ active_user_avatar }}" alt="{{ active_user_name }}" class="sidebar-user-avatar" width="36" height="36">
+        {% if active_user_plan == 'Premium' %}<div class="avatar-premium-ring"></div>{% endif %}
+      </div>
+      <div class="sidebar-user-info-col">
+        <span class="sidebar-user-name">{{ active_user_name }}</span>
+        <span class="sidebar-user-plan"><span data-i18n="sidebar_user_plan_label">Plan: </span><span data-i18n="user_plan_{{ active_user_plan|lower }}">{{ active_user_plan }}</span></span>
+      </div>
+      <svg class="sidebar-user-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+    <div class="sidebar-user-dropdown" id="user-profile-dropdown">
+      <div class="dropdown-info-email">{{ active_user_email }}</div>
+      <div class="dropdown-divider"></div>
+      <a href="/ajustes/" class="dropdown-item">
+        <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span data-i18n="dropdown_ajustes">Ajustes</span>
+      </a>
+      <div class="dropdown-item" id="lang-menu-btn">
+        <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+        <span data-i18n="dropdown_idioma">Idioma</span>
+      </div>
+      <a href="{% url 'soporte' %}" class="dropdown-item">
+        <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span data-i18n="dropdown_ayuda">Obtener ayuda</span>
+      </a>
+      <a href="{% url 'planes' %}" class="dropdown-item">
+        <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        <span data-i18n="dropdown_planes">Planes</span>
+      </a>
+      <a href="{% url 'suscripcion' %}" class="dropdown-item">
+        <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        <span data-i18n="dropdown_suscripcion">Suscripción</span>
+      </a>
+      <a href="/informacion/" class="dropdown-item">
+        <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span data-i18n="dropdown_info">Más información</span>
+      </a>
+      <div class="dropdown-divider"></div>
+      <a href="{% url 'logout' %}" class="dropdown-item dropdown-item-danger">
+        <svg class="dropdown-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        <span data-i18n="dropdown_cerrar_sesion">Cerrar sesión</span>
+      </a>
+    </div>
+  </div>
+  {% endif %}
 </aside>
 <main class="main">
   <div class="page-content">
@@ -401,6 +485,331 @@ window.createRipple = function(btn, e) {
         });
       });
     }
+
+    // Player Global State
+    let isPlaying = false;
+    let currentTime = 0;
+    let totalDuration = 215; // default 3:35
+    let currentVolume = 80;
+    let isMuted = false;
+    let isFavorite = false;
+    let timerInterval = null;
+    let currentSongId = null;
+
+    // Track list discovered on page
+    let pageTracks = [];
+    let currentTrackIndex = -1;
+
+    function savePlayerState() {
+        try {
+            sessionStorage.setItem('player_active_track', JSON.stringify({
+                title: document.querySelector('.sidebar-player .player-track')?.innerText || '',
+                artist: document.querySelector('.sidebar-player .player-artist')?.innerText || '',
+                coverUrl: document.getElementById('sidebar-player-cover')?.src || '',
+                durationSec: totalDuration,
+                songId: currentSongId
+            }));
+            sessionStorage.setItem('player_current_time', currentTime);
+            sessionStorage.setItem('player_is_playing', isPlaying);
+            sessionStorage.setItem('player_volume', currentVolume);
+            sessionStorage.setItem('player_is_muted', isMuted);
+        } catch (e) {
+            console.error("Error saving player state:", e);
+        }
+    }
+
+    function restorePlayerState() {
+        try {
+            const activeTrackStr = sessionStorage.getItem('player_active_track');
+            if (!activeTrackStr) return;
+            const track = JSON.parse(activeTrackStr);
+            if (!track.songId) return;
+
+            currentSongId = track.songId;
+            totalDuration = track.durationSec || 215;
+            
+            // Update UI
+            const coverEl = document.getElementById('sidebar-player-cover');
+            const trackEl = document.querySelector('.sidebar-player .player-track');
+            const artistEl = document.querySelector('.sidebar-player .player-artist');
+            const totalTimeEl = document.getElementById('player-time-total');
+            
+            if (coverEl && track.coverUrl) coverEl.src = track.coverUrl;
+            if (trackEl && track.title) trackEl.innerText = track.title;
+            if (artistEl && track.artist) artistEl.innerText = track.artist;
+            if (totalTimeEl) totalTimeEl.innerText = formatTime(totalDuration);
+
+            // Restore volume & mute
+            const savedVolume = sessionStorage.getItem('player_volume');
+            if (savedVolume !== null) {
+                currentVolume = parseInt(savedVolume);
+                const slider = document.getElementById('player-volume-slider');
+                if (slider) slider.value = currentVolume;
+            }
+            const savedMuted = sessionStorage.getItem('player_is_muted');
+            if (savedMuted !== null) {
+                isMuted = savedMuted === 'true';
+            }
+            updateVolume(isMuted ? 0 : currentVolume);
+
+            // Restore favorite check
+            isFavorite = localStorage.getItem('fav_' + currentSongId) === 'true';
+            updateFavoriteUI();
+
+            // Restore current time
+            const savedTime = sessionStorage.getItem('player_current_time');
+            if (savedTime !== null) {
+                currentTime = parseInt(savedTime);
+                const savedIsPlaying = sessionStorage.getItem('player_is_playing') === 'true';
+                if (savedIsPlaying) {
+                    currentTime = Math.min(currentTime + 1, totalDuration); // compensate reload lag
+                }
+                updateProgressUI();
+            }
+
+            // Restore playback state
+            const savedIsPlaying = sessionStorage.getItem('player_is_playing') === 'true';
+            if (savedIsPlaying) {
+                startPlayback();
+            } else {
+                pausePlayback();
+            }
+        } catch (e) {
+            console.error("Error restoring player state:", e);
+        }
+    }
+
+    window.loadTrack = function(title, artist, coverUrl, durationSec, songId) {
+        currentTime = 0;
+        totalDuration = durationSec || 215;
+        currentSongId = songId;
+        
+        // Update UI
+        const coverEl = document.getElementById('sidebar-player-cover');
+        const trackEl = document.querySelector('.sidebar-player .player-track');
+        const artistEl = document.querySelector('.sidebar-player .player-artist');
+        const totalTimeEl = document.getElementById('player-time-total');
+        
+        if (coverEl) coverEl.src = coverUrl || '/static/plataforma/img/albumes/default.jpg';
+        if (trackEl) trackEl.innerText = title;
+        if (artistEl) artistEl.innerText = artist;
+        if (totalTimeEl) totalTimeEl.innerText = formatTime(totalDuration);
+        
+        // Favorites check
+        isFavorite = localStorage.getItem('fav_' + songId) === 'true';
+        updateFavoriteUI();
+
+        // Start playback
+        startPlayback();
+        savePlayerState();
+    };
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60);
+        const s = Math.floor(secs % 60);
+        return m + ":" + (s < 10 ? "0" : "") + s;
+    }
+
+    function updateFavoriteUI() {
+        const btn = document.getElementById('player-fav-btn');
+        if (btn) {
+            btn.innerHTML = isFavorite ? '♥' : '♡';
+            btn.style.color = isFavorite ? 'var(--crimson)' : 'var(--gold)';
+        }
+    }
+
+    window.toggleFavorite = function() {
+        if (!currentSongId) return;
+        isFavorite = !isFavorite;
+        localStorage.setItem('fav_' + currentSongId, isFavorite ? 'true' : 'false');
+        updateFavoriteUI();
+        savePlayerState();
+    };
+
+    function startPlayback() {
+        isPlaying = true;
+        const playBtn = document.getElementById('player-play-btn');
+        if (playBtn) playBtn.innerHTML = '⏸';
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (currentTime < totalDuration) {
+                currentTime++;
+                updateProgressUI();
+                savePlayerState();
+            } else {
+                clearInterval(timerInterval);
+                playNext();
+            }
+        }, 1000);
+        savePlayerState();
+    }
+
+    function pausePlayback() {
+        isPlaying = false;
+        const playBtn = document.getElementById('player-play-btn');
+        if (playBtn) playBtn.innerHTML = '▶';
+        clearInterval(timerInterval);
+        savePlayerState();
+    }
+
+    window.togglePlay = function() {
+        if (isPlaying) {
+            pausePlayback();
+        } else {
+            startPlayback();
+        }
+    };
+
+    function updateProgressUI() {
+        const currentEl = document.getElementById('player-time-current');
+        const progressBar = document.getElementById('player-progress-bar');
+        
+        if (currentEl) currentEl.innerText = formatTime(currentTime);
+        if (progressBar) {
+            const pct = (currentTime / totalDuration) * 100;
+            progressBar.style.width = pct + '%';
+        }
+    }
+
+    window.seekTimeline = function(event) {
+        const timeline = document.getElementById('player-timeline');
+        if (!timeline) return;
+        const rect = timeline.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const width = rect.width;
+        const pct = Math.min(Math.max(clickX / width, 0), 1);
+        
+        currentTime = Math.floor(pct * totalDuration);
+        updateProgressUI();
+        savePlayerState();
+    };
+
+    window.updateVolume = function(val) {
+        currentVolume = val;
+        const icon = document.getElementById('player-volume-icon');
+        if (icon) {
+            if (val == 0 || isMuted) {
+                icon.innerText = '🔇';
+            } else if (val < 33) {
+                icon.innerText = '🔈';
+            } else if (val < 66) {
+                icon.innerText = '🔉';
+            } else {
+                icon.innerText = '🔊';
+            }
+        }
+        savePlayerState();
+    };
+
+    window.toggleMute = function() {
+        isMuted = !isMuted;
+        const slider = document.getElementById('player-volume-slider');
+        if (slider) {
+            slider.value = isMuted ? 0 : currentVolume;
+        }
+        updateVolume(isMuted ? 0 : currentVolume);
+        savePlayerState();
+    };
+
+    function discoverTracks() {
+        pageTracks = [];
+        document.querySelectorAll('.btn-play').forEach((btn, idx) => {
+            const songId = btn.getAttribute('data-id');
+            const row = btn.closest('tr');
+            let title = "Tema desconocido";
+            let artist = "Artista desconocido";
+            let coverUrl = "/static/plataforma/img/albumes/default.jpg";
+            let durationSec = 215;
+            
+            if (row) {
+                const titleStrong = row.querySelector('strong');
+                if (titleStrong) title = titleStrong.innerText.trim();
+                
+                const cols = row.querySelectorAll('td');
+                cols.forEach(c => {
+                    if (c.innerText.includes(':') && c.innerText.length <= 5) {
+                        const parts = c.innerText.trim().split(':');
+                        if (parts.length === 2) {
+                            durationSec = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                        }
+                    }
+                });
+                
+                const img = row.querySelector('img');
+                if (img) coverUrl = img.src;
+            }
+            
+            const artistHero = document.querySelector('.detalle-artista-portada-info h1');
+            if (artistHero) {
+                artist = artistHero.innerText.trim();
+            } else {
+                const card = btn.closest('.card');
+                if (card) {
+                    const artistHeader = card.querySelector('.card-header-premium h3');
+                    if (artistHeader) artist = artistHeader.innerText.trim();
+                }
+            }
+            
+            pageTracks.push({
+                id: songId,
+                title: title,
+                artist: artist,
+                coverUrl: coverUrl,
+                durationSec: durationSec,
+                button: btn
+            });
+        });
+    }
+
+    window.playNext = function() {
+        discoverTracks();
+        if (pageTracks.length === 0) return;
+        
+        if (currentSongId) {
+            currentTrackIndex = pageTracks.findIndex(t => t.id == currentSongId);
+        }
+        
+        currentTrackIndex++;
+        if (currentTrackIndex >= pageTracks.length) {
+            currentTrackIndex = 0;
+        }
+        
+        const track = pageTracks[currentTrackIndex];
+        if (track && track.button) {
+            track.button.click();
+        }
+    };
+
+    window.playPrev = function() {
+        discoverTracks();
+        if (pageTracks.length === 0) return;
+        
+        if (currentSongId) {
+            currentTrackIndex = pageTracks.findIndex(t => t.id == currentSongId);
+        }
+        
+        currentTrackIndex--;
+        if (currentTrackIndex < 0) {
+            currentTrackIndex = pageTracks.length - 1;
+        }
+        
+        const track = pageTracks[currentTrackIndex];
+        if (track && track.button) {
+            track.button.click();
+        }
+    };
+
+    window.addEventListener('load', () => {
+        discoverTracks();
+        const currentTotal = document.getElementById('player-time-total');
+        if (currentTotal && currentTotal.innerText.includes(':')) {
+            const parts = currentTotal.innerText.split(':');
+            totalDuration = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        }
+        restorePlayerState();
+    });
+
   })();
 </script>
 

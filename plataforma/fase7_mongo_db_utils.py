@@ -7,6 +7,11 @@ from typing import List, Dict, Any, Union
 from datetime import datetime, date
 from pymongo import MongoClient
 
+import urllib.parse
+from pymongo.errors import ConnectionFailure
+
+_client = None
+_db = None
 _thread_local = threading.local()
 
 def load_config():
@@ -16,28 +21,29 @@ def load_config():
 
 CONFIG = load_config()
 
+def _load_config():
+    return load_config()
+
 def get_mongo_db():
-    if not hasattr(_thread_local, 'mongo_client') or _thread_local.mongo_client is None:
-        try:
-            mongo_conf = CONFIG.get("mongodb", {})
-            usuario = mongo_conf.get("usuario")
-            contrasena = urllib.parse.quote_plus(mongo_conf.get("contrasena", ""))
-            cluster = mongo_conf.get("cluster")
-            mongo_uri = f"mongodb+srv://{usuario}:{contrasena}@{cluster}/"
-            _thread_local.mongo_client = MongoClient(mongo_uri)
-        except Exception as e:
-            raise Exception(f"Error de conexión a MongoDB Atlas (SoundWaveDB): {e}")
-    mongo_conf = CONFIG.get("mongodb", {})
-    base_datos = mongo_conf.get("base_datos")
-    return _thread_local.mongo_client[base_datos]
+    global _client, _db
+    if _client is None:
+        config = _load_config()
+        mongo_cfg = config.get('mongodb', {})
+        usuario = mongo_cfg.get('usuario')
+        contrasena = urllib.parse.quote_plus(mongo_cfg.get('contrasena', ''))
+        uri = (
+            f"mongodb+srv://{usuario}:{contrasena}"
+            f"@{mongo_cfg['cluster']}/?retryWrites=true&w=majority"
+            f"&maxPoolSize=10&minPoolSize=2&maxIdleTimeMS=30000"
+            f"&connectTimeoutMS=5000&socketTimeoutMS=10000"
+        )
+        _client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+        _db = _client[mongo_cfg['base_datos']]
+    return _db
 
 def close_connection():
-    if hasattr(_thread_local, 'mongo_client') and _thread_local.mongo_client:
-        try:
-            _thread_local.mongo_client.close()
-        except:
-            pass
-        _thread_local.mongo_client = None
+    # Con pool de conexiones persistentes, mantenemos el cliente abierto para reutilización.
+    pass
 
 @contextmanager
 def get_db_connection():
@@ -330,10 +336,29 @@ def get_dashboard_data(id_usuario):
             }).limit(15)
             for s in rec_songs:
                 gen_name = s.get("generos", ["Desconocido"])[0]
+                
+                # Resolvemos portada_url
+                id_artista = s.get('artista', {}).get('id_artista')
+                id_album = s.get('album', {}).get('id_album')
+                album_portada = None
+                if id_artista:
+                    art_doc = db.artistas.find_one({"id_artista": id_artista}, {"albumes": 1})
+                    if art_doc:
+                        for alb in art_doc.get('albumes', []):
+                            if alb.get('id_album') == id_album:
+                                album_portada = alb.get('portada_url')
+                                break
+                if not album_portada:
+                    titulo_alb = s.get('album', {}).get('titulo_album', 'A').replace(' ', '+')
+                    album_portada = f"https://ui-avatars.com/api/?name={titulo_alb}&size=200&background=2a2a2a&color=c9a84c&bold=true"
+                
                 recomendaciones.append({
                     "Cancion": s.get("titulo_cancion"),
                     "Artista": s.get("artista", {}).get("nombre_artistico"),
-                    "Genero": gen_name
+                    "Genero": gen_name,
+                    "album": {
+                        "portada_url": album_portada
+                    }
                 })
                 
         if len(recomendaciones) < 5:
@@ -348,10 +373,29 @@ def get_dashboard_data(id_usuario):
                 canc_name = s.get("titulo_cancion")
                 if art_name not in ya_artistas and canc_name not in ya_canciones:
                     gen_name = s.get("generos", ["Global"])[0]
+                    
+                    # Resolvemos portada_url
+                    id_artista = s.get('artista', {}).get('id_artista')
+                    id_album = s.get('album', {}).get('id_album')
+                    album_portada = None
+                    if id_artista:
+                        art_doc = db.artistas.find_one({"id_artista": id_artista}, {"albumes": 1})
+                        if art_doc:
+                            for alb in art_doc.get('albumes', []):
+                                if alb.get('id_album') == id_album:
+                                    album_portada = alb.get('portada_url')
+                                    break
+                    if not album_portada:
+                        titulo_alb = s.get('album', {}).get('titulo_album', 'A').replace(' ', '+')
+                        album_portada = f"https://ui-avatars.com/api/?name={titulo_alb}&size=200&background=2a2a2a&color=c9a84c&bold=true"
+                    
                     recomendaciones.append({
                         "Cancion": canc_name,
                         "Artista": art_name,
-                        "Genero": gen_name
+                        "Genero": gen_name,
+                        "album": {
+                            "portada_url": album_portada
+                        }
                     })
                     if len(recomendaciones) >= 5:
                         break
@@ -368,23 +412,22 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
     id_usr = int(id_usuario)
     resultado = {}
     
-    pipeline = [
-        {"$match": {"estado": "Activo"}},
-        {"$group": {
-            "_id": "$artista.id_artista",
-            "nombre_artistico": {"$first": "$artista.nombre_artistico"},
-            "pais": {"$first": "$artista.pais"},
-            "total_reproducciones": {"$sum": "$num_reproducciones"}
-        }},
-        {"$sort": {"total_reproducciones": -1}}
-    ]
+    artistas = list(db.artistas.find({}, {"id_artista": 1, "nombre_artistico": 1, "imagen_url": 1, "pais": 1, "albumes": 1}))
+    artistas_map = {a['id_artista']: a for a in artistas if 'id_artista' in a}
+    
+    artistas_ranking = list(db.artistas.find({}).sort("total_reproducciones", -1))
     resultado['artistas'] = []
-    for r in db.canciones.aggregate(pipeline):
+    for artista in artistas_ranking:
+        imagen = artista.get('imagen_url')
+        if not imagen:
+            nombre = artista.get('nombre_artistico', 'A').replace(' ', '+')
+            imagen = f"https://ui-avatars.com/api/?name={nombre}&size=440&background=1a1a1a&color=c9a84c&bold=true&font-size=0.4"
         resultado['artistas'].append({
-            'id_artista': r['_id'],
-            'nombre_artistico': r['nombre_artistico'],
-            'pais': r['pais'] if r['pais'] else 'Sin datos',
-            'total_reproducciones': r['total_reproducciones']
+            'id_artista': artista.get('id_artista'),
+            'nombre_artistico': artista.get('nombre_artistico'),
+            'pais': artista.get('pais') if artista.get('pais') else 'Sin datos',
+            'total_reproducciones': artista.get('total_reproducciones', 0),
+            'imagen_url': imagen
         })
         
     resultado['lista_artistas'] = sorted(list(db.canciones.distinct("artista.nombre_artistico", {"estado": "Activo"})))
@@ -404,15 +447,45 @@ def get_catalogo_completo(id_usuario, filtro_artista: str = '', filtro_genero: s
         
     resultado['canciones'] = []
     for s in cursor:
+        id_artista = s.get('artista', {}).get('id_artista')
+        
+        artista_imagen = None
+        if id_artista and id_artista in artistas_map:
+            artista_imagen = artistas_map[id_artista].get('imagen_url')
+        if not artista_imagen:
+            nombre_art = s.get('artista', {}).get('nombre_artistico', 'A').replace(' ', '+')
+            artista_imagen = f"https://ui-avatars.com/api/?name={nombre_art}&size=200&background=1a1a1a&color=c9a84c&bold=true"
+            
+        album_portada = None
+        id_album = s.get('album', {}).get('id_album')
+        if id_artista and id_artista in artistas_map:
+            for alb in artistas_map[id_artista].get('albumes', []):
+                if alb.get('id_album') == id_album:
+                    album_portada = alb.get('portada_url')
+                    break
+        if not album_portada:
+            titulo_alb = s.get('album', {}).get('titulo_album', 'A').replace(' ', '+')
+            album_portada = f"https://ui-avatars.com/api/?name={titulo_alb}&size=200&background=2a2a2a&color=c9a84c&bold=true"
+            
         resultado['canciones'].append({
             'id_cancion': s.get('id_cancion'),
             'Cancion': s.get('titulo_cancion'),
             'Artista': s.get('artista', {}).get('nombre_artistico'),
-            'id_artista': s.get('artista', {}).get('id_artista'),
+            'id_artista': id_artista,
             'Album': s.get('album', {}).get('titulo_album'),
-            'id_album': s.get('album', {}).get('id_album'),
+            'id_album': id_album,
             'Segundos': s.get('duracion_seg'),
-            'Reproducciones': s.get('num_reproducciones')
+            'Reproducciones': s.get('num_reproducciones'),
+            'artista': {
+                'id_artista': id_artista,
+                'nombre_artistico': s.get('artista', {}).get('nombre_artistico'),
+                'imagen_url': artista_imagen
+            },
+            'album': {
+                'id_album': id_album,
+                'titulo_album': s.get('album', {}).get('titulo_album'),
+                'portada_url': album_portada
+            }
         })
         
     latest_play = db.reproducciones.find_one(
@@ -736,8 +809,11 @@ def get_detalle_artista_mongo(id_artista, id_usuario):
         'pais': artista.get('pais'),
         'fecha_debut': artista.get('fecha_debut'),
         'imagen_perfil': artista.get('imagen_perfil'),
+        'imagen_url': artista.get('imagen_url') or artista.get('imagen_perfil'),
         'email_contacto': artista.get('email_contacto'),
-        'total_reprod': total_reprod
+        'email_usuario': artista.get('email_contacto'),
+        'total_reprod': total_reprod,
+        'total_reproducciones': total_reprod
     }
     
     albumes_list = []
@@ -797,6 +873,7 @@ def get_detalle_album_mongo(id_album, id_usuario):
         'titulo_album': alb_info.get('titulo_album'),
         'fecha_lanzamiento': alb_info.get('fecha_lanzamiento'),
         'descripcion': alb_info.get('descripcion'),
+        'portada_url': alb_info.get('portada_url'),
         'nombre_artistico': artista_doc.get('nombre_artistico'),
         'id_artista': artista_doc.get('id_artista')
     }

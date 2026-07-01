@@ -111,7 +111,16 @@
                 data-artista="{{ artista.nombre_artistico|lower }}"
                 data-pais="{{ artista.pais|lower }}">
                 <td class="ranking-num">{{ forloop.counter }}</td>
-                <td><strong><a href="{% url 'detalle_artista' id_artista=artista.id_artista %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);">{{ artista.nombre_artistico }}</a></strong></td>
+                <td>
+                    <div class="artista-row-con-foto">
+                        <img src="{{ artista.imagen_url }}" 
+                             alt="{{ artista.nombre_artistico }}"
+                             class="artista-mini-foto"
+                             onerror="this.src='https://ui-avatars.com/api/?name={{ artista.nombre_artistico|urlencode }}&size=48&background=1a1a1a&color=c9a84c&bold=true'"
+                        >
+                        <strong><a href="{% url 'detalle_artista' id_artista=artista.id_artista %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);">{{ artista.nombre_artistico }}</a></strong>
+                    </div>
+                </td>
                 <td>{{ artista.pais }}</td>
                 <td class="reps-num" style="text-align: right;">{{ artista.total_reproducciones }}</td>
             </tr>
@@ -135,7 +144,7 @@
     <table class="table-custom" id="tabla-canciones">
         <thead>
             <tr>
-                <th style="width: 60px; text-align: center;" data-i18n="catalogo_col_play">Escuchar</th>
+                <th style="width: 110px; text-align: center;" data-i18n="catalogo_col_play">Escuchar</th>
                 <th data-i18n="catalogo_col_title">Titulo</th>
                 <th data-i18n="dashboard_col_artist">Artista</th>
                 <th data-i18n="catalogo_col_album">Album</th>
@@ -151,9 +160,16 @@
                 data-artista="{{ cancion.Artista|lower }}"
                 data-album="{{ cancion.Album|lower }}">
                 <td style="text-align: center;">
-                    <button id="btn-play-{{ cancion.id_cancion }}" class="btn btn-gold btn-play" data-id="{{ cancion.id_cancion }}" onclick="reproducirCancion(this)" style="padding: 0.35rem 0.7rem; font-size: 0.9rem; border-radius: 50%; cursor: pointer; border: none; font-family: sans-serif;">
-                        &#9654;
-                    </button>
+                    <div class="cancion-con-portada" style="justify-content: center;">
+                        <img src="{{ cancion.album.portada_url|default:'https://ui-avatars.com/api/?name=SW&size=48&background=2a2a2a&color=c9a84c' }}"
+                             alt="{{ cancion.Album }}"
+                             class="portada-mini"
+                             onerror="this.src='https://ui-avatars.com/api/?name={{ cancion.Cancion|first }}&size=48&background=2a2a2a&color=c9a84c&bold=true'"
+                        >
+                        <button id="btn-play-{{ cancion.id_cancion }}" class="btn btn-gold btn-play" data-id="{{ cancion.id_cancion }}" onclick="reproducirCancion(this)" style="padding: 0.35rem 0.7rem; font-size: 0.9rem; border-radius: 50%; cursor: pointer; border: none; font-family: sans-serif;">
+                            &#9654;
+                        </button>
+                    </div>
                 </td>
                 <td><strong>{{ cancion.Cancion }}</strong></td>
                 <td><a href="{% url 'detalle_artista' id_artista=cancion.id_artista %}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold);">{{ cancion.Artista }}</a></td>
@@ -233,10 +249,9 @@ function reproducirCancion(btn) {
                 const repsEl = document.querySelector('.reps-num-' + idCancion);
                 if (repsEl) repsEl.innerText = data.reproducciones.toLocaleString();
 
-                const playerTrack = document.querySelector('.player-track');
-                const playerArtist = document.querySelector('.player-artist');
-                if (playerTrack) playerTrack.innerText = data.titulo;
-                if (playerArtist) playerArtist.innerText = data.artista;
+                if (typeof window.loadTrack === 'function') {
+                    window.loadTrack(data.titulo, data.artista, data.portada_url, data.duracion_seg, idCancion);
+                }
 
                 const sidebarPlayer = document.querySelector('.sidebar-player');
                 if (sidebarPlayer) {

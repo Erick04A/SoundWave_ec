@@ -1401,3 +1401,218 @@ h1, h2, h3, h4, h5, h6, .cormorant {
 .dropdown-item-danger:hover .dropdown-icon {
   color: #c0392b;
 }
+
+/* Nuevos estilos para imágenes en SoundWave */
+.artista-row-con-foto {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.artista-mini-foto {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #c9a84c;
+    flex-shrink: 0;
+}
+
+.portada-mini {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.cancion-con-portada {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rec-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e8e0d0;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.rec-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+
+.rec-portada-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+}
+
+.rec-portada {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s;
+}
+
+.rec-card:hover .rec-portada {
+    transform: scale(1.05);
+}
+
+.rec-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.rec-card:hover .rec-overlay {
+    background: rgba(0,0,0,0.35);
+}
+
+.rec-play-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #c9a84c;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.rec-card:hover .rec-play-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.rec-info {
+    padding: 12px 14px;
+}
+
+.rec-titulo {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #1a1a1a;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rec-artista {
+    font-size: 0.78rem;
+    color: #8a7968;
+    margin: 0 0 8px;
+}
+
+.detalle-artista-hero {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    border-radius: 16px;
+    margin-bottom: 32px;
+}
+
+.detalle-artista-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: brightness(0.7);
+}
+
+.detalle-artista-hero-info {
+    position: absolute;
+    bottom: 28px;
+    left: 32px;
+}
+
+.detalle-artista-hero-info h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.detalle-artista-hero-info p {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+    margin: 4px 0 0;
+}
+
+/* Dos columnas para el detalle del artista */
+.artista-detalle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+    margin-bottom: 2.5rem;
+}
+
+@media (max-width: 992px) {
+    .artista-detalle-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* Tarjeta de portada vertical en dos columnas */
+.detalle-artista-portada-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/10;
+    overflow: hidden;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--ink-2);
+    background: #1A1714;
+}
+
+.detalle-artista-portada-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.75);
+}
+
+.detalle-artista-portada-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 3rem 1.5rem 1.5rem;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(26,23,20,0.85) 60%, #1A1714 100%);
+    color: #fff;
+    box-sizing: border-box;
+}
+
+.detalle-artista-portada-info h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: #fff;
+    margin: 0 0 0.4rem 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+
+.detalle-artista-portada-info p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    margin: 0;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}

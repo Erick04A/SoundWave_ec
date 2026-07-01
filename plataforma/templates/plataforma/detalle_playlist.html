@@ -80,10 +80,9 @@ function reproducirCancion(btn) {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                const playerTrack = document.querySelector('.player-track');
-                const playerArtist = document.querySelector('.player-artist');
-                if (playerTrack) playerTrack.innerText = data.titulo;
-                if (playerArtist) playerArtist.innerText = data.artista;
+                if (typeof window.loadTrack === 'function') {
+                    window.loadTrack(data.titulo, data.artista, data.portada_url, data.duracion_seg, idCancion);
+                }
 
                 const sidebarPlayer = document.querySelector('.sidebar-player');
                 if (sidebarPlayer) {

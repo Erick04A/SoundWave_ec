@@ -4,14 +4,21 @@
 
 <div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #24201C 0%, #1A1714 100%); border: 1px solid var(--ink-2); color: var(--cream); position: relative; overflow: hidden; padding: 2.5rem;">
     <div style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap; position: relative; z-index: 2;">
-        <div style="width: 150px; height: 150px; border-radius: 8px; background: var(--ink-2); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 4rem; color: var(--gold); font-family: 'Cormorant Garamond', serif;">
-            &#128191;
+        <div style="width: 150px; height: 150px; border-radius: 8px; overflow: hidden; border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; background: var(--ink-2); flex-shrink: 0;">
+            <img src="{{ album.portada_url|default:'' }}" 
+                 alt="{{ album.titulo_album }}" 
+                 style="width: 100%; height: 100%; object-fit: cover;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            >
+            <div style="display: none; align-items: center; justify-content: center; font-size: 4rem; color: var(--gold); font-family: 'Cormorant Garamond', serif; width: 100%; height: 100%;">
+                &#128191;
+            </div>
         </div>
         
         <div style="flex: 1; min-width: 250px;">
             <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--gold); font-weight: 600; letter-spacing: 2px;" data-i18n="detail_album_label">Álbum</span>
             <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; color: var(--gold-2); margin-top: 0.2rem; margin-bottom: 0.8rem; line-height: 1;">{{ album.titulo_album }}</h1>
-            <p style="font-size: 0.9rem; line-height: 1.6; color: var(--cream-3); max-width: 700px; font-style: italic; margin-bottom: 1.2rem;">"{{ album.descripcion|default:"Sin descripción disponible." }}"</p>
+            <p style="font-size: 1rem; line-height: 1.6; color: var(--cream-3); max-width: 700px; margin-bottom: 1.2rem;">{{ album.descripcion|default:"Sin descripción disponible." }}</p>
             
             <div style="display: flex; gap: 2rem; font-size: 0.85rem; color: var(--cream-3); flex-wrap: wrap;">
                 <div><strong data-i18n="detail_album_artist">Artista:</strong> <a href="{% url 'detalle_artista' id_artista=album.id_artista %}" style="color: var(--gold); text-decoration: none; border-bottom: 1px dashed var(--gold);">{{ album.nombre_artistico }}</a></div>
@@ -93,10 +100,9 @@ function reproducirCancion(btn) {
                 const repsEl = document.querySelector('.reps-num-' + idCancion);
                 if (repsEl) repsEl.innerText = data.reproducciones.toLocaleString();
 
-                const playerTrack = document.querySelector('.player-track');
-                const playerArtist = document.querySelector('.player-artist');
-                if (playerTrack) playerTrack.innerText = data.titulo;
-                if (playerArtist) playerArtist.innerText = data.artista;
+                if (typeof window.loadTrack === 'function') {
+                    window.loadTrack(data.titulo, data.artista, data.portada_url, data.duracion_seg, idCancion);
+                }
 
                 const sidebarPlayer = document.querySelector('.sidebar-player');
                 if (sidebarPlayer) {

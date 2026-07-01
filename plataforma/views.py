@@ -291,12 +291,26 @@ def reproducir_cancion(request, id_cancion):
         if not song:
             return JsonResponse({'success': False, 'error': 'Canción no encontrada'}, status=404)
         duracion = song.get('duracion_seg', 0)
+        
+        # Get portada_url of the album
+        portada_url = None
+        if song.get("album", {}).get("id_album"):
+            art_doc = db.artistas.find_one({"albumes.id_album": int(song["album"]["id_album"])})
+            if art_doc:
+                alb = next((a for a in art_doc.get("albumes", []) if a.get("id_album") == int(song["album"]["id_album"])), None)
+                if alb:
+                    portada_url = alb.get("portada_url")
+        if not portada_url:
+            portada_url = "/static/plataforma/img/albumes/default.jpg"
+            
         titulo, artista, nuevas_reproducciones = registrar_reproduccion_mongo(id_usuario, id_cancion, duracion)
         return JsonResponse({
             'success': True,
             'titulo': titulo,
             'artista': artista,
-            'reproducciones': nuevas_reproducciones
+            'reproducciones': nuevas_reproducciones,
+            'duracion_seg': duracion,
+            'portada_url': portada_url
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -304,7 +318,8 @@ def reproducir_cancion(request, id_cancion):
 def historial_reproduccion(request):
     rol_actual = request.session.get('rol')
     id_usuario_sesion = request.session.get('id_usuario')
-    id_usuario = int(request.GET.get('id_usuario', get_usuario_activo()))
+    default_id = id_usuario_sesion if id_usuario_sesion is not None else get_usuario_activo()
+    id_usuario = int(request.GET.get('id_usuario', default_id))
     if rol_actual != 'Administrador' and int(id_usuario) != int(id_usuario_sesion):
         return HttpResponseForbidden("No tienes permiso para ver el historial de otro usuario.")
     fecha_inicio = request.GET.get('fecha_inicio', '')
