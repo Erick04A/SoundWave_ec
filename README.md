@@ -154,15 +154,16 @@ Después de cualquier operación en Compass, simplemente refresca la página en 
 
 ## Fases del proyecto
 
-| Fase | Descripción | Nota |
-|---|---|---|
-| Fase 1 | Análisis del caso de negocio y casos de uso | — |
-| Fase 2 | Diseño lógico y físico SQL Server | — |
-| Fase 3 | Implementación SQL Server + stored procedures | **10/10** |
-| Fase 4 | Aplicación web Django + pyodbc + SQL Server | — |
-| Fase 5 | Diseño del modelo NoSQL en MongoDB | — |
-| Fase 6 | Implementación MongoDB (migración + playground) | — |
-| Fase 7 | Aplicación web Django + PyMongo + MongoDB Atlas | En curso |
+| Fase | Descripción |
+|---|---|
+| Fase 1 | Análisis del caso de negocio y casos de uso |
+| Fase 2 | Diseño lógico y físico SQL Server |
+| Fase 3 | Implementación SQL Server + stored procedures |
+| Fase 4 | Aplicación web Django + pyodbc + SQL Server |
+| Fase 5 | Diseño del modelo NoSQL en MongoDB |
+| Fase 6 | Implementación MongoDB (migración + playground) |
+| Fase 7 | Aplicación web Django + PyMongo + MongoDB Atlas |
+| Fase 8 | Resumen y presentacion general |
 
 ---
 
